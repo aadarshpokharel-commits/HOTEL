@@ -170,20 +170,76 @@ function FloorSurface() {
           roughness={0.78}
         />
       </mesh>
-      <mesh position={[0, 0.008, 0.15]} receiveShadow>
-        <boxGeometry args={[6.85, 0.04, 4.5]} />
-        <meshStandardMaterial color="#6e5940" roughness={0.74} />
-      </mesh>
-      <mesh position={[0, 0.04, 0.15]} receiveShadow>
-        <boxGeometry args={[6.68, 0.035, 4.32]} />
-        <meshStandardMaterial
-          map={LINEN_TEXTURE}
-          bumpMap={LINEN_TEXTURE}
-          bumpScale={0.004}
-          color="#d3ccbd"
-          roughness={0.98}
-        />
-      </mesh>
+      <group position={[1.8, 0.012, 0.65]} receiveShadow>
+        <mesh receiveShadow>
+          <boxGeometry args={[4.8, 0.025, 3.4]} />
+          <meshStandardMaterial color="#17394b" roughness={0.94} />
+        </mesh>
+        <mesh position={[0, 0.015, 0]} receiveShadow>
+          <boxGeometry args={[4.7, 0.012, 3.3]} />
+          <meshStandardMaterial color="#c99d54" roughness={0.68} metalness={0.08} />
+        </mesh>
+        <mesh position={[0, 0.026, 0]} receiveShadow>
+          <boxGeometry args={[4.58, 0.012, 3.18]} />
+          <meshStandardMaterial
+            map={LINEN_TEXTURE}
+            bumpMap={LINEN_TEXTURE}
+            bumpScale={0.004}
+            color="#e5ddcf"
+            roughness={0.98}
+          />
+        </mesh>
+        {[-2.16, 2.16].map((x) => (
+          <mesh key={`carpet-side-border-${x}`} position={[x, 0.035, 0]}>
+            <boxGeometry args={[0.035, 0.006, 2.78]} />
+            <meshStandardMaterial color="#17394b" roughness={0.92} />
+          </mesh>
+        ))}
+        {[-1.36, 1.36].map((z) => (
+          <mesh key={`carpet-end-border-${z}`} position={[0, 0.035, z]}>
+            <boxGeometry args={[4.35, 0.006, 0.035]} />
+            <meshStandardMaterial color="#17394b" roughness={0.92} />
+          </mesh>
+        ))}
+        {[-2.06, 2.06].map((x) => (
+          <mesh key={`carpet-gold-side-${x}`} position={[x, 0.039, 0]}>
+            <boxGeometry args={[0.012, 0.004, 2.62]} />
+            <meshStandardMaterial color="#c99d54" roughness={0.55} metalness={0.18} />
+          </mesh>
+        ))}
+        {[-1.26, 1.26].map((z) => (
+          <mesh key={`carpet-gold-end-${z}`} position={[0, 0.039, z]}>
+            <boxGeometry args={[4.1, 0.004, 0.012]} />
+            <meshStandardMaterial color="#c99d54" roughness={0.55} metalness={0.18} />
+          </mesh>
+        ))}
+        <group position={[0, 0.042, 0]}>
+          <mesh rotation={[-Math.PI / 2, 0, 0]}>
+            <ringGeometry args={[0.3, 0.34, 48]} />
+            <meshStandardMaterial color="#c99d54" roughness={0.55} metalness={0.18} side={THREE.DoubleSide} />
+          </mesh>
+          <mesh rotation={[-Math.PI / 2, 0, 0]}>
+            <ringGeometry args={[0.17, 0.19, 40]} />
+            <meshStandardMaterial color="#17394b" roughness={0.92} side={THREE.DoubleSide} />
+          </mesh>
+          <mesh position={[0, 0.002, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+            <circleGeometry args={[0.1, 32]} />
+            <meshStandardMaterial color="#c99d54" roughness={0.55} metalness={0.18} />
+          </mesh>
+          {[-1, 1].flatMap((side) =>
+            [-1, 1].map((depthSide) => (
+              <mesh
+                key={`${side}-${depthSide}`}
+                position={[side * 1.9, 0.002, depthSide * 1.12]}
+                rotation={[0, Math.PI / 4, 0]}
+              >
+                <boxGeometry args={[0.16, 0.004, 0.16]} />
+                <meshStandardMaterial color="#c99d54" roughness={0.55} metalness={0.18} />
+              </mesh>
+            )),
+          )}
+        </group>
+      </group>
     </group>
   );
 }
@@ -194,32 +250,32 @@ function RoomShell() {
       <FloorSurface />
       <mesh position={[-6.15, 1.18, 0]} receiveShadow>
         <boxGeometry args={[0.22, 2.36, 9.1]} />
-        <meshStandardMaterial map={STONE_TEXTURE} color="#e2dbce" roughness={0.9} />
+        <meshStandardMaterial map={STONE_TEXTURE} color="#cfc5b5" roughness={0.92} />
       </mesh>
       <mesh position={[6.15, 0.82, -1.7]} receiveShadow>
         <boxGeometry args={[0.2, 0.72, 5.7]} />
         <meshStandardMaterial
           map={STONE_TEXTURE}
-          color="#d6cdbd"
-          roughness={0.88}
+          color="#c8bdac"
+          roughness={0.92}
         />
       </mesh>
       <mesh position={[-3.9, 1.65, -4.45]} receiveShadow>
         <boxGeometry args={[4.5, 3.3, 0.18]} />
-        <meshStandardMaterial map={STONE_TEXTURE} color="#e3dbcd" roughness={0.9} />
+        <meshStandardMaterial map={STONE_TEXTURE} color="#d7cebf" roughness={0.92} />
       </mesh>
       <mesh position={[4.15, 1.65, -4.45]} receiveShadow>
         <boxGeometry args={[3.9, 3.3, 0.18]} />
-        <meshStandardMaterial map={STONE_TEXTURE} color="#e3dbcd" roughness={0.9} />
+        <meshStandardMaterial map={STONE_TEXTURE} color="#d7cebf" roughness={0.92} />
       </mesh>
       <mesh position={[0.1, 0.36, -4.39]} receiveShadow>
         <boxGeometry args={[3.45, 0.68, 0.22]} />
-        <meshStandardMaterial color="#ded6c9" roughness={0.88} />
+        <meshStandardMaterial color="#d2c7b7" roughness={0.92} />
       </mesh>
       <mesh position={[0.1, 1.97, -4.47]} castShadow receiveShadow>
         <boxGeometry args={[3.35, 2.55, 0.055]} />
         <meshStandardMaterial
-          color="#526263"
+          color="#354a48"
           roughness={0.18}
           metalness={0.2}
           transparent
@@ -252,11 +308,11 @@ function RoomShell() {
       ))}
       <mesh position={[-6.005, 3.12, 0]}>
         <boxGeometry args={[0.08, 0.12, 8.95]} />
-        <meshStandardMaterial color="#d3c3a6" roughness={0.78} />
+        <meshStandardMaterial color="#c5b69d" roughness={0.82} />
       </mesh>
       <mesh position={[6.02, 1.2, -1.7]}>
         <boxGeometry args={[0.08, 0.12, 5.55]} />
-        <meshStandardMaterial color="#d3c3a6" roughness={0.78} />
+        <meshStandardMaterial color="#c5b69d" roughness={0.82} />
       </mesh>
     </group>
   );
@@ -440,10 +496,31 @@ function BathroomCutaway() {
 function BedroomPartition() {
   return (
     <group>
+      <mesh position={[-3.9, 2.45, -4.335]} receiveShadow>
+        <boxGeometry args={[4.08, 1.62, 0.065]} />
+        <meshStandardMaterial color="#24434a" roughness={0.82} />
+      </mesh>
+      {Array.from({ length: 19 }, (_, index) => {
+        const x = -5.82 + index * 0.214;
+        return (
+          <mesh key={index} position={[x, 2.45, -4.292]} castShadow>
+            <boxGeometry args={[0.018, 1.56, 0.018]} />
+            <meshStandardMaterial
+              color={index % 3 === 0 ? "#36565a" : "#2b484d"}
+              roughness={0.58}
+              metalness={0.08}
+            />
+          </mesh>
+        );
+      })}
+      <mesh position={[-3.9, 1.63, -4.29]}>
+        <boxGeometry args={[4.08, 0.025, 0.035]} />
+        <meshStandardMaterial color="#efc07b" roughness={0.42} metalness={0.48} />
+      </mesh>
       {[{ z: -3.2, length: 2.4 }, { z: -0.6, length: 1 }].map(({ z, length }) => (
         <mesh key={z} position={[-1.05, 0.82, z]} castShadow receiveShadow>
           <boxGeometry args={[0.16, 1.64, length]} />
-          <meshStandardMaterial map={STONE_TEXTURE} color="#ddd4c6" roughness={0.9} />
+          <meshStandardMaterial map={STONE_TEXTURE} color="#c8bdac" roughness={0.92} />
         </mesh>
       ))}
       <mesh position={[-1.05, 1.62, -1.95]}>
@@ -452,7 +529,7 @@ function BedroomPartition() {
       </mesh>
       <mesh position={[-3.6, 0.48, 0.28]} castShadow receiveShadow>
         <boxGeometry args={[5, 0.96, 0.16]} />
-        <meshStandardMaterial map={STONE_TEXTURE} color="#d8cebd" roughness={0.9} />
+        <meshStandardMaterial map={STONE_TEXTURE} color="#c8bdac" roughness={0.92} />
       </mesh>
       <mesh position={[-3.6, 0.98, 0.22]}>
         <boxGeometry args={[5.02, 0.08, 0.16]} />
@@ -476,7 +553,7 @@ function BedroomPartition() {
 
 function ApartmentEntry() {
   return (
-    <group>
+    <group position={[-4.9, 0, 0]}>
       <mesh position={[-0.08, 0.82, 4.31]} castShadow>
         <boxGeometry args={[0.08, 1.64, 0.13]} />
         <meshStandardMaterial map={WALNUT_TEXTURE} color="#7d6242" roughness={0.45} />
@@ -521,6 +598,55 @@ function ApartmentEntry() {
         <boxGeometry args={[1.24, 0.02, 2.18]} />
         <meshStandardMaterial map={LINEN_TEXTURE} color="#d4c7b2" roughness={0.98} />
       </mesh>
+    </group>
+  );
+}
+
+function LivingRoomTelevision() {
+  return (
+    <group position={[1.8, 0, -0.1]}>
+      <mesh position={[0, 1.88, 4.34]} castShadow>
+        <boxGeometry args={[2.64, 1.68, 0.075]} />
+        <meshStandardMaterial map={WALNUT_TEXTURE} color="#4b3829" roughness={0.58} />
+      </mesh>
+      <mesh position={[0, 1.88, 4.285]}>
+        <boxGeometry args={[2.5, 1.54, 0.025]} />
+        <meshStandardMaterial color="#c99d54" roughness={0.4} metalness={0.38} />
+      </mesh>
+      <mesh position={[0, 1.88, 4.263]}>
+        <boxGeometry args={[2.44, 1.48, 0.025]} />
+        <meshStandardMaterial color="#101820" roughness={0.2} metalness={0.24} />
+      </mesh>
+      <mesh position={[0, 1.88, 4.245]}>
+        <boxGeometry args={[2.34, 1.38, 0.012]} />
+        <meshPhysicalMaterial
+          color="#13212a"
+          emissive="#07131c"
+          emissiveIntensity={0.24}
+          roughness={0.18}
+          metalness={0.16}
+          clearcoat={0.72}
+          clearcoatRoughness={0.18}
+        />
+      </mesh>
+      <mesh position={[1.12, 1.22, 4.236]}>
+        <sphereGeometry args={[0.018, 12, 10]} />
+        <meshStandardMaterial color="#d5b987" emissive="#d5b987" emissiveIntensity={0.3} />
+      </mesh>
+      <mesh position={[0, 0.72, 4.02]} castShadow receiveShadow>
+        <boxGeometry args={[2.3, 0.22, 0.34]} />
+        <meshStandardMaterial map={WALNUT_TEXTURE} color="#5a4030" roughness={0.54} />
+      </mesh>
+      <mesh position={[0, 0.835, 4.005]}>
+        <boxGeometry args={[2.2, 0.018, 0.3]} />
+        <meshStandardMaterial color="#c99d54" roughness={0.4} metalness={0.42} />
+      </mesh>
+      {[-1.02, 1.02].map((x) => (
+        <mesh key={x} position={[x * 0.9, 0.57, 4.04]} castShadow>
+          <boxGeometry args={[0.045, 0.24, 0.22]} />
+          <meshStandardMaterial color="#9d805c" roughness={0.4} metalness={0.42} />
+        </mesh>
+      ))}
     </group>
   );
 }
@@ -666,37 +792,63 @@ function Sofa({ position, rotation = 0 }: { position: [number, number, number]; 
   return (
     <group position={position} rotation={[0, rotation, 0]}>
       <RoundedBox position={[0, 0.48, 0]} args={[2.8, 0.5, 0.95]} radius={0.09} smoothness={4} castShadow>
-        <meshStandardMaterial map={LINEN_TEXTURE} color="#c6b8a2" roughness={0.96} />
+        <meshStandardMaterial map={LINEN_TEXTURE} color="#0f4863" roughness={0.82} />
       </RoundedBox>
       <RoundedBox position={[0, 0.91, -0.37]} args={[2.8, 0.85, 0.22]} radius={0.09} smoothness={4} castShadow>
-        <meshStandardMaterial map={LINEN_TEXTURE} color="#c8bba7" roughness={0.96} />
+        <meshStandardMaterial map={LINEN_TEXTURE} color="#123e58" roughness={0.84} />
       </RoundedBox>
       {[-1.34, 1.34].map((x) => (
         <RoundedBox key={x} position={[x, 0.69, 0.02]} args={[0.24, 0.75, 0.94]} radius={0.06} smoothness={4} castShadow>
-          <meshStandardMaterial map={LINEN_TEXTURE} color="#aa9b84" roughness={0.96} />
+          <meshStandardMaterial map={LINEN_TEXTURE} color="#0f4863" roughness={0.82} />
         </RoundedBox>
       ))}
+      <RoundedBox position={[0, 0.71, 0.16]} args={[2.48, 0.34, 0.66]} radius={0.1} smoothness={4} castShadow receiveShadow>
+        <meshStandardMaterial map={LINEN_TEXTURE} color="#eee8dc" roughness={0.98} />
+      </RoundedBox>
       {[-0.88, 0, 0.88].map((x) => (
         <RoundedBox key={x} position={[x, 0.84, -0.18]} args={[0.76, 0.5, 0.16]} radius={0.08} smoothness={4} castShadow>
-          <meshStandardMaterial map={LINEN_TEXTURE} color={x === 0 ? "#d7cdbd" : "#b9ad99"} roughness={0.98} />
+          <meshStandardMaterial map={LINEN_TEXTURE} color="#f4efe5" roughness={0.98} />
         </RoundedBox>
       ))}
       {[-0.66, 0.66].map((x, index) => (
         <group key={x} position={[x, 0.77, 0.16]} rotation={[0.08, index ? -0.12 : 0.12, index ? -0.12 : 0.12]}>
           <RoundedBox args={[0.62, 0.43, 0.18]} radius={0.08} smoothness={4} castShadow>
-            <meshStandardMaterial map={LINEN_TEXTURE} color={index ? "#b39b7b" : "#e2d7c5"} roughness={0.97} />
+            <meshStandardMaterial map={LINEN_TEXTURE} color="#f4efe5" roughness={0.97} />
           </RoundedBox>
-          <mesh position={[0, 0, 0.094]}>
-            <boxGeometry args={[0.035, 0.26, 0.012]} />
-            <meshStandardMaterial color="#b6925e" roughness={0.4} metalness={0.22} />
+        </group>
+      ))}
+      {[-1, 1].map((side) => (
+        <group key={side} position={[side * 1.465, 0.69, 0.03]} rotation={[0, side * Math.PI / 2, 0]}>
+          <RoundedBox args={[0.68, 0.62, 0.035]} radius={0.06} smoothness={4}>
+            <meshStandardMaterial map={LINEN_TEXTURE} color="#0f4863" roughness={0.84} />
+          </RoundedBox>
+          {[0.43, -0.43].map((y) => (
+            <mesh key={y} position={[0, y, 0.022]}>
+              <boxGeometry args={[0.74, 0.014, 0.012]} />
+              <meshStandardMaterial color="#c99d54" roughness={0.42} metalness={0.48} />
+            </mesh>
+          ))}
+          {[-0.19, 0.19].map((x) => (
+            <mesh key={x} position={[x, 0.06, 0.025]}>
+              <boxGeometry args={[0.012, 0.25, 0.012]} />
+              <meshStandardMaterial color="#174f69" roughness={0.78} />
+            </mesh>
+          ))}
+          <mesh position={[0, 0.37, 0.025]}>
+            <boxGeometry args={[0.64, 0.035, 0.022]} />
+            <meshStandardMaterial color="#eee8dc" roughness={0.92} />
           </mesh>
         </group>
       ))}
+      <mesh position={[0, 0.205, 0.485]}>
+        <boxGeometry args={[2.52, 0.035, 0.035]} />
+        <meshStandardMaterial color="#c99d54" roughness={0.4} metalness={0.5} />
+      </mesh>
       {[-1.1, 1.1].flatMap((x) =>
         [-0.29, 0.29].map((z) => (
           <mesh key={`${x}-${z}`} position={[x, 0.19, z]}>
-            <cylinderGeometry args={[0.035, 0.035, 0.36, 8]} />
-            <meshStandardMaterial color="#6b5136" roughness={0.68} />
+            <cylinderGeometry args={[0.04, 0.04, 0.36, 8]} />
+            <meshStandardMaterial color="#b18b4e" roughness={0.38} metalness={0.62} />
           </mesh>
         )),
       )}
@@ -708,51 +860,76 @@ function Bed({ position, width = 2.7 }: { position: [number, number, number]; wi
   return (
     <group position={position}>
       <RoundedBox position={[0, 0.34, -0.48]} args={[width + 0.2, 0.72, 0.15]} radius={0.055} smoothness={4} castShadow>
-        <meshStandardMaterial map={WALNUT_TEXTURE} color="#e2d4bd" roughness={0.58} />
+        <meshStandardMaterial map={WALNUT_TEXTURE} color="#3a2a23" roughness={0.56} />
       </RoundedBox>
+      <RoundedBox position={[0, 0.51, -0.382]} args={[width - 0.16, 0.38, 0.045]} radius={0.07} smoothness={4} castShadow>
+        <meshStandardMaterial map={LINEN_TEXTURE} color="#1a1a2e" roughness={0.92} />
+      </RoundedBox>
+      {Array.from({ length: 7 }, (_, index) => {
+        const x = (index - 3) * ((width - 0.38) / 6);
+        return (
+          <mesh key={index} position={[x, 0.51, -0.355]}>
+            <boxGeometry args={[0.012, 0.31, 0.009]} />
+            <meshStandardMaterial color="#33334a" roughness={0.82} />
+          </mesh>
+        );
+      })}
+      <mesh position={[0, 0.294, -0.355]}>
+        <boxGeometry args={[width - 0.26, 0.018, 0.02]} />
+        <meshStandardMaterial color="#efc07b" roughness={0.42} metalness={0.38} />
+      </mesh>
       <RoundedBox position={[0, 0.22, 0]} args={[width + 0.22, 0.42, 2.72]} radius={0.06} smoothness={4} castShadow receiveShadow>
-        <meshStandardMaterial map={WALNUT_TEXTURE} color="#d5c4a9" roughness={0.6} />
+        <meshStandardMaterial map={WALNUT_TEXTURE} color="#5a4030" roughness={0.58} />
       </RoundedBox>
       <RoundedBox position={[0, 0.52, 0.08]} args={[width, 0.44, 2.38]} radius={0.15} smoothness={5} castShadow>
         <meshStandardMaterial map={LINEN_TEXTURE} color="#fffaf0" roughness={0.98} />
       </RoundedBox>
       <mesh position={[0, 0.79, 0.55]} castShadow>
         <boxGeometry args={[width - 0.12, 0.14, 1.35]} />
-        <meshStandardMaterial map={LINEN_TEXTURE} color="#c4b49b" roughness={0.98} />
+        <meshStandardMaterial map={LINEN_TEXTURE} color="#0f3460" roughness={0.94} />
       </mesh>
       {[-0.38, 0, 0.38].map((z) => (
         <mesh key={z} position={[0, 0.866, z]}>
           <boxGeometry args={[width - 0.36, 0.008, 0.012]} />
-          <meshStandardMaterial color="#e1d4c0" roughness={0.94} />
+          <meshStandardMaterial color="#29486b" roughness={0.92} />
         </mesh>
       ))}
       <RoundedBox position={[0, 0.88, 1.03]} args={[width - 0.16, 0.12, 0.62]} radius={0.045} smoothness={3} castShadow>
-        <meshStandardMaterial map={LINEN_TEXTURE} color="#b4a58e" roughness={0.98} />
+        <meshStandardMaterial map={LINEN_TEXTURE} color="#16213e" roughness={0.94} />
       </RoundedBox>
-      {[-0.48, 0, 0.48].map((x) => (
-        <mesh key={x} position={[x, 0.944, 1.03]}>
-          <boxGeometry args={[0.012, 0.008, 0.54]} />
-          <meshStandardMaterial color="#d4c6ae" roughness={0.9} />
+      {[0.72, 1.34].map((z) => (
+        <mesh key={z} position={[0, 0.944, z]}>
+          <boxGeometry args={[width - 0.28, 0.008, 0.018]} />
+          <meshStandardMaterial color="#efc07b" roughness={0.5} metalness={0.3} />
         </mesh>
       ))}
       {[-width * 0.27, width * 0.27].map((x) => (
         <group key={x} position={[x, 0.77, -0.82]}>
           <RoundedBox args={[0.76, 0.22, 0.58]} radius={0.08} smoothness={4} castShadow>
-            <meshStandardMaterial map={LINEN_TEXTURE} color="#fffdf7" roughness={1} />
+            <meshStandardMaterial map={LINEN_TEXTURE} color="#16213e" roughness={0.96} />
           </RoundedBox>
           <mesh position={[0, -0.1, 0.3]} rotation={[-0.12, 0, 0]}>
             <boxGeometry args={[0.77, 0.015, 0.025]} />
-            <meshStandardMaterial color="#b09a78" roughness={0.8} />
+            <meshStandardMaterial color="#efc07b" roughness={0.56} metalness={0.18} />
           </mesh>
         </group>
       ))}
+      <group position={[0, 0.77, -0.36]} rotation={[0.04, 0, 0]}>
+        <RoundedBox args={[0.82, 0.25, 0.36]} radius={0.1} smoothness={5} castShadow>
+          <meshStandardMaterial map={LINEN_TEXTURE} color="#0f3460" roughness={0.93} />
+        </RoundedBox>
+        <mesh position={[0, -0.1, 0.19]}>
+          <boxGeometry args={[0.68, 0.012, 0.012]} />
+          <meshStandardMaterial color="#efc07b" roughness={0.52} metalness={0.2} />
+        </mesh>
+      </group>
       <mesh position={[0, 0.81, 1.04]} castShadow>
         <boxGeometry args={[width - 0.08, 0.12, 0.35]} />
-        <meshStandardMaterial color="#a69882" roughness={0.94} />
+        <meshStandardMaterial map={LINEN_TEXTURE} color="#16213e" roughness={0.94} />
       </mesh>
       <mesh position={[width * 0.22, 0.855, 1.04]}>
         <boxGeometry args={[0.11, 0.015, 0.34]} />
-        <meshStandardMaterial color="#e7d8bd" roughness={0.8} />
+        <meshStandardMaterial color="#efc07b" roughness={0.5} metalness={0.24} />
       </mesh>
     </group>
   );
@@ -765,11 +942,27 @@ function SideTable({ position }: { position: [number, number, number] }) {
         <boxGeometry args={[0.74, 0.12, 0.68]} />
         <meshStandardMaterial
           map={WALNUT_TEXTURE}
-          color="#e1cfb1"
+          color="#3b2b23"
           roughness={0.48}
           metalness={0.03}
         />
       </mesh>
+      <mesh position={[0, 0.38, 0.015]} castShadow>
+        <boxGeometry args={[0.49, 0.27, 0.46]} />
+        <meshStandardMaterial map={WALNUT_TEXTURE} color="#493326" roughness={0.54} />
+      </mesh>
+      {[-0.06, 0.1].map((y) => (
+        <group key={y}>
+          <mesh position={[0, 0.38 + y, 0.252]}>
+            <boxGeometry args={[0.45, 0.012, 0.012]} />
+            <meshStandardMaterial color="#684a34" roughness={0.55} />
+          </mesh>
+          <mesh position={[0, 0.38 + y, 0.264]} rotation={[0, 0, Math.PI / 2]}>
+            <cylinderGeometry args={[0.018, 0.018, 0.13, 10]} />
+            <meshStandardMaterial color="#efc07b" metalness={0.58} roughness={0.34} />
+          </mesh>
+        </group>
+      ))}
       {[[-0.28, -0.25], [0.28, -0.25], [-0.28, 0.25], [0.28, 0.25]].map(
         ([x, z]) => (
           <mesh key={`${x}-${z}`} position={[x, 0.27, z]}>
@@ -1120,40 +1313,53 @@ function WritingDesk() {
 }
 
 function WallArtwork() {
+  const veins = [
+    [[-0.58, -0.72, 0.095], [-0.36, -0.44, 0.095], [-0.44, -0.16, 0.095], [-0.13, 0.08, 0.095], [-0.24, 0.42, 0.095], [0.02, 0.74, 0.095]],
+    [[-0.41, -0.18, 0.096], [-0.12, -0.27, 0.096], [0.05, -0.48, 0.096], [0.39, -0.62, 0.096], [0.58, -0.78, 0.096]],
+    [[-0.17, 0.08, 0.097], [0.15, 0.02, 0.097], [0.3, -0.12, 0.097], [0.58, -0.18, 0.097]],
+    [[-0.24, 0.42, 0.097], [0.04, 0.34, 0.097], [0.24, 0.46, 0.097], [0.59, 0.38, 0.097]],
+  ].map((points) => new THREE.CatmullRomCurve3(points.map(([x, y, z]) => new THREE.Vector3(x, y, z))));
+
   return (
     <group position={[-3.6, 1.94, -4.31]}>
-      <mesh castShadow>
-        <boxGeometry args={[1.42, 1.64, 0.1]} />
-        <meshStandardMaterial map={WALNUT_TEXTURE} color="#72583c" roughness={0.46} />
+      <mesh castShadow receiveShadow>
+        <boxGeometry args={[1.52, 1.72, 0.1]} />
+        <meshStandardMaterial map={WALNUT_TEXTURE} color="#30251f" roughness={0.52} />
       </mesh>
       <mesh position={[0, 0, 0.058]}>
-        <boxGeometry args={[1.28, 1.5, 0.025]} />
-        <meshStandardMaterial color="#c7a773" roughness={0.32} metalness={0.42} />
+        <boxGeometry args={[1.39, 1.59, 0.025]} />
+        <meshStandardMaterial color="#efc07b" roughness={0.36} metalness={0.5} />
       </mesh>
       <mesh position={[0, 0, 0.079]}>
-        <boxGeometry args={[1.28, 1.5, 0.025]} />
-        <meshStandardMaterial map={LINEN_TEXTURE} color="#d5c9b5" roughness={0.96} />
+        <boxGeometry args={[1.34, 1.54, 0.025]} />
+        <meshStandardMaterial color="#0f3460" roughness={0.66} metalness={0.1} />
       </mesh>
-      <mesh position={[-0.2, 0.04, 0.1]} rotation={[0, 0, -0.2]} scale={[0.22, 0.55, 0.025]}>
-        <sphereGeometry args={[1, 20, 16]} />
-        <meshStandardMaterial color="#71806b" roughness={0.9} />
-      </mesh>
-      <mesh position={[0.23, -0.17, 0.11]} rotation={[0, 0, 0.23]} scale={[0.2, 0.4, 0.024]}>
-        <sphereGeometry args={[1, 20, 16]} />
-        <meshStandardMaterial color="#b48268" roughness={0.9} />
-      </mesh>
-      <mesh position={[0.05, 0.4, 0.12]} scale={[0.16, 0.16, 0.028]}>
-        <sphereGeometry args={[1, 24, 18]} />
-        <meshStandardMaterial color="#b9955d" roughness={0.78} />
-      </mesh>
-      <mesh position={[0.05, -0.58, 0.1]}>
-        <boxGeometry args={[0.82, 0.018, 0.015]} />
-        <meshStandardMaterial color="#8c7355" roughness={0.76} />
-      </mesh>
-      <mesh position={[0, 0.72, 0.11]}>
-        <boxGeometry args={[0.7, 0.015, 0.015]} />
-        <meshStandardMaterial color="#b6925e" roughness={0.35} metalness={0.45} />
-      </mesh>
+      {veins.map((curve, index) => (
+        <mesh key={index} castShadow>
+          <tubeGeometry args={[curve, 32, index === 0 ? 0.012 : 0.007, 6, false]} />
+          <meshStandardMaterial
+            color={index === 0 ? "#efc07b" : "#d9b36f"}
+            roughness={0.36}
+            metalness={0.48}
+          />
+        </mesh>
+      ))}
+      {Array.from({ length: 11 }, (_, index) => {
+        const angle = -0.9 + index * 0.18;
+        const endX = 0.16 + Math.sin(angle) * 0.65;
+        const endY = 0.18 + Math.cos(angle) * 0.66;
+        const curve = new THREE.CatmullRomCurve3([
+          new THREE.Vector3(0.16, 0.18, 0.096),
+          new THREE.Vector3(0.2 + (endX - 0.2) * 0.48, 0.3 + (endY - 0.3) * 0.5, 0.096),
+          new THREE.Vector3(endX, endY, 0.096),
+        ]);
+        return (
+          <mesh key={index}>
+            <tubeGeometry args={[curve, 12, 0.0035, 5, false]} />
+            <meshStandardMaterial color="#efc07b" roughness={0.45} metalness={0.52} />
+          </mesh>
+        );
+      })}
     </group>
   );
 }
@@ -1176,12 +1382,12 @@ function FeatureObject({
     "lobby-artwork": [0, 0, -4.25],
     bathroom: [4.1, 0, -2.8],
     toilet: [5, 0, -0.2],
-    lounge: [1.8, 0, 1.45],
-    "chef-table": [1.8, 0, 1.45],
-    "reading-chair": [1.8, 0, 1.45],
-    "lounge-sofa": [1.8, 0, 1.45],
-    "living-room": [1.8, 0, 1.45],
-    "panoramic-lounge": [1.8, 0, 1.45],
+    lounge: [1.8, 0, 0.15],
+    "chef-table": [1.8, 0, 0.15],
+    "reading-chair": [1.8, 0, 0.15],
+    "lounge-sofa": [1.8, 0, 0.15],
+    "living-room": [1.8, 0, 0.15],
+    "panoramic-lounge": [1.8, 0, 0.15],
     "king-bed": [-3.65, 0, -1.65],
     "suite-bed": [-3.65, 0, -1.65],
     "canopy-bed": [-3.65, 0, -1.65],
@@ -1255,7 +1461,7 @@ function FeatureObject({
   if (feature.name === "The living hall") {
     return (
       <Interactive {...interactive}>
-        <group position={[1.8, 0, 1.45]}>
+        <group position={[1.8, 0, 0.15]}>
           <Sofa position={[0, 0, 0]} />
           <RoundedBox position={[0, 0.4, 1.35]} args={[1.45, 0.1, 0.78]} radius={0.05} smoothness={3} castShadow>
             <meshStandardMaterial map={WALNUT_TEXTURE} color="#ddc8a9" roughness={0.48} />
@@ -1487,19 +1693,19 @@ function InteriorRoom({
       "lobby-lounge": [0, 1.05, 1.15],
       "reception-flowers": [0, 1.7, -1.7],
       "lobby-artwork": [0, 1.95, -4.1],
-      lounge: [1.8, 0.95, 1.45],
+      lounge: [1.8, 0.95, 0.15],
       "olive-tree": [5, 1.2, 2.3],
-      "chef-table": [1.8, 0.95, 1.45],
+      "chef-table": [1.8, 0.95, 0.15],
       "king-bed": [-3.65, 0.85, -1.65],
-      "reading-chair": [1.8, 0.95, 1.45],
+      "reading-chair": [1.8, 0.95, 0.15],
       "writing-desk": [4.6, 0.9, 3.05],
       "suite-bed": [-3.65, 0.85, -1.65],
-      "lounge-sofa": [1.8, 0.95, 1.45],
+      "lounge-sofa": [1.8, 0.95, 0.15],
       "canopy-bed": [-3.65, 0.85, -1.65],
-      "living-room": [1.8, 0.95, 1.45],
+      "living-room": [1.8, 0.95, 0.15],
       "dining-table": [4.6, 0.95, 3.4],
       "penthouse-bed": [-3.65, 0.85, -1.65],
-      "panoramic-lounge": [1.8, 0.95, 1.45],
+      "panoramic-lounge": [1.8, 0.95, 0.15],
       bathroom: [3.9, 1.1, -2.8],
       toilet: [5, 0.9, -0.2],
       terrace: [5, 1.2, 2.3],
@@ -1549,6 +1755,7 @@ function InteriorRoom({
           <BedroomPartition />
           <BathroomCutaway />
           <ApartmentEntry />
+          <LivingRoomTelevision />
           <CeilingLights />
         </>
       )}
