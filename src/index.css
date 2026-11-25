@@ -585,6 +585,7 @@ a:focus-visible {
   position: absolute;
   inset: 0;
   cursor: grab;
+  touch-action: none;
 }
 
 .interior-scene:active {
@@ -922,14 +923,15 @@ a:focus-visible {
 
 @media (max-width: 640px) {
   .app-shell {
-    min-height: 560px;
+    min-height: 0;
+    height: 100svh;
   }
 
   .site-header {
-    height: 70px;
-    flex-basis: 70px;
+    height: 64px;
+    flex-basis: 64px;
     grid-template-columns: 1fr auto;
-    padding: 0 6%;
+    padding: 0 5%;
   }
 
   .brand-mark {
@@ -937,12 +939,21 @@ a:focus-visible {
     height: 30px;
   }
 
+  .brand {
+    gap: 9px;
+  }
+
+  .brand-name {
+    font-size: 10px;
+  }
+
   .top-nav {
     justify-content: end;
-    gap: 23px;
+    gap: 17px;
   }
 
   .top-nav-link {
+    min-height: 44px;
     font-size: 10px;
   }
 
@@ -951,8 +962,8 @@ a:focus-visible {
   }
 
   .site-footer {
-    height: 34px;
-    flex-basis: 34px;
+    height: 30px;
+    flex-basis: 30px;
     padding: 0 6%;
     font-size: 6px;
   }
@@ -963,8 +974,8 @@ a:focus-visible {
 
   .scene-backdrop {
     background:
-      radial-gradient(ellipse at 64% 50%, rgba(84, 82, 71, 0.19), transparent 48%),
-      linear-gradient(145deg, #121413, #171a18 56%, #111312);
+      radial-gradient(ellipse at 64% 50%, rgba(112, 106, 88, 0.24), transparent 48%),
+      linear-gradient(145deg, #181a18, #22241f 56%, #151715);
   }
 
   .canvas-wrap {
@@ -988,25 +999,38 @@ a:focus-visible {
 
   .floor-rail {
     top: auto;
-    right: 5%;
-    bottom: 16%;
-    left: 5%;
+    right: 4%;
+    bottom: 11.5%;
+    left: 4%;
     width: auto;
-    padding: 10px 9px 8px;
-    border: 1px solid rgba(235, 230, 217, 0.12);
-    background: rgba(20, 22, 20, 0.76);
+    padding: 11px 11px 8px;
+    border: 1px solid rgba(235, 230, 217, 0.24);
+    border-radius: 4px;
+    background: rgba(24, 26, 23, 0.9);
+    box-shadow: 0 10px 32px rgba(0, 0, 0, 0.28);
     transform: none;
-    backdrop-filter: blur(14px);
+    backdrop-filter: blur(18px) saturate(125%);
   }
 
   .rail-heading {
-    margin: 0 2px 7px;
-    font-size: 7px;
+    margin: 0 3px 7px;
+    color: #d0c8b9;
+    font-size: 8px;
   }
 
   .rail-list {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-    gap: 2px;
+    display: flex;
+    gap: 5px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    padding: 2px 0 5px;
+    scrollbar-width: none;
+    scroll-snap-type: x proximity;
+    touch-action: pan-x;
+  }
+
+  .rail-list::-webkit-scrollbar {
+    display: none;
   }
 
   .rail-list::before {
@@ -1014,27 +1038,30 @@ a:focus-visible {
   }
 
   .rail-item {
-    min-height: 54px;
+    min-width: 78px;
+    min-height: 60px;
+    flex: 0 0 78px;
     grid-template-columns: 1fr;
     grid-template-rows: 20px 1fr 5px;
     justify-items: center;
-    padding: 5px 1px 3px;
+    padding: 5px 4px 4px;
     text-align: center;
+    scroll-snap-align: center;
   }
 
   .rail-number {
     width: auto;
-    font-size: 8px;
+    font-size: 10px;
   }
 
   .rail-name {
     display: block;
-    max-width: 52px;
-    overflow: hidden;
+    max-width: 70px;
+    overflow: visible;
     padding: 0;
-    font-size: 7px;
-    line-height: 1.2;
-    text-overflow: ellipsis;
+    font-size: 8px;
+    line-height: 1.25;
+    text-overflow: clip;
     white-space: normal;
   }
 
@@ -1044,11 +1071,17 @@ a:focus-visible {
   }
 
   .scene-caption {
-    bottom: 8%;
+    bottom: 1.5%;
     left: 6%;
-    gap: 7px;
-    font-size: 6px;
-    letter-spacing: 0.09em;
+    gap: 8px;
+    padding: 6px 9px;
+    border: 1px solid rgba(235, 230, 217, 0.15);
+    border-radius: 2px;
+    background: rgba(22, 24, 21, 0.78);
+    color: #d4d0c6;
+    font-size: 7px;
+    letter-spacing: 0.08em;
+    backdrop-filter: blur(10px);
   }
 
   .caption-orbit {
@@ -1063,13 +1096,16 @@ a:focus-visible {
 
   .camera-reset {
     right: 6%;
-    bottom: 7.6%;
-    padding: 7px 9px;
-    font-size: 8px;
+    bottom: 1.5%;
+    min-height: 40px;
+    padding: 8px 11px;
+    border-color: rgba(235, 230, 217, 0.28);
+    background: rgba(25, 27, 25, 0.82);
+    font-size: 9px;
   }
 
   .selection-card {
-    top: 49%;
+    top: 47%;
     right: 6%;
     min-width: 0;
     gap: 9px;
@@ -1117,16 +1153,17 @@ a:focus-visible {
 
   .interior-vignette {
     background:
-      linear-gradient(90deg, rgba(17, 18, 16, 0.8), rgba(17, 18, 16, 0.45) 55%, rgba(17, 18, 16, 0.08)),
-      linear-gradient(0deg, rgba(15, 16, 14, 0.86) 0%, rgba(15, 16, 14, 0.16) 50%, rgba(15, 16, 14, 0.2) 100%);
+      linear-gradient(90deg, rgba(17, 18, 16, 0.16), rgba(17, 18, 16, 0.04) 62%, transparent),
+      linear-gradient(0deg, rgba(15, 16, 14, 0.48) 0%, rgba(15, 16, 14, 0.08) 32%, transparent 68%, rgba(15, 16, 14, 0.12) 100%);
     pointer-events: none;
   }
 
   .interior-topline {
-    top: 5%;
-    left: 7%;
+    top: 4%;
+    left: 6%;
     gap: 9px;
-    font-size: 7px;
+    color: #f0eadf;
+    font-size: 8px;
   }
 
   .interior-topline-rule {
@@ -1134,60 +1171,85 @@ a:focus-visible {
   }
 
   .interior-copy {
-    top: 13%;
-    left: 7%;
-    width: 73%;
+    top: 10.5%;
+    left: 4%;
+    width: 92%;
+    padding: 13px 15px 12px;
+    border: 1px solid rgba(239, 230, 211, 0.24);
+    border-radius: 3px;
+    background: rgba(20, 22, 19, 0.82);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22);
+    backdrop-filter: blur(16px) saturate(120%);
   }
 
   .interior-copy h1 {
-    margin: 13px 0 9px;
-    font-size: clamp(34px, 9.5vw, 48px);
+    margin: 8px 0 7px;
+    font-size: clamp(32px, 8.6vw, 38px);
   }
 
   .interior-description {
-    max-width: 260px;
-    font-size: 9px;
-    line-height: 1.55;
+    max-width: 42ch;
+    color: rgba(249, 246, 238, 0.88);
+    font-size: 10px;
+    line-height: 1.5;
   }
 
   .interior-instructions {
-    margin-top: 12px;
-    font-size: 6px;
+    gap: 8px;
+    margin-top: 9px;
+    color: #e4d8c2;
+    font-size: 7px;
+    letter-spacing: 0.1em;
+  }
+
+  .instruction-icon {
+    width: 30px;
+    height: 30px;
+    flex: 0 0 30px;
   }
 
   .feature-card {
-    bottom: 24%;
-    left: 6%;
-    width: min(250px, 72vw);
-    gap: 5px;
-    padding: 10px 12px;
+    bottom: calc(11.5% + 96px);
+    left: 5%;
+    width: min(320px, 90vw);
+    gap: 6px;
+    padding: 11px 13px;
+    border-color: rgba(235, 224, 204, 0.32);
+    background: rgba(23, 25, 22, 0.9);
   }
 
   .feature-card strong {
-    font-size: 14px;
+    font-size: 15px;
   }
 
   .feature-card > span:last-child {
-    font-size: 8px;
+    color: #e1ddd3;
+    font-size: 9px;
+    line-height: 1.5;
   }
 
   .interior-reset {
-    top: 5%;
-    right: 5%;
-    padding: 7px 9px;
-    font-size: 8px;
+    top: 3%;
+    right: 4%;
+    min-height: 40px;
+    padding: 8px 10px;
+    border-color: rgba(235, 230, 217, 0.32);
+    background: rgba(24, 26, 23, 0.88);
+    font-size: 9px;
   }
 
   .interior-rail-wrap {
     top: auto;
-    right: 5%;
-    bottom: 12%;
-    left: 5%;
-    padding: 9px 8px 7px;
-    border: 1px solid rgba(235, 230, 217, 0.19);
-    background: rgba(22, 22, 19, 0.52);
+    right: 4%;
+    bottom: 11.5%;
+    left: 4%;
+    padding: 10px 11px 8px;
+    border: 1px solid rgba(235, 230, 217, 0.28);
+    border-radius: 4px;
+    background: rgba(24, 26, 23, 0.91);
+    box-shadow: 0 10px 32px rgba(0, 0, 0, 0.28);
     transform: none;
-    backdrop-filter: blur(12px);
+    backdrop-filter: blur(18px) saturate(125%);
   }
 
   .floor-rail--compact {
@@ -1208,22 +1270,43 @@ a:focus-visible {
   }
 
   .floor-rail--compact .rail-heading {
-    margin: 0 2px 6px;
+    margin: 0 3px 7px;
+    color: #d0c8b9;
   }
 
   .floor-rail--compact .rail-item {
-    min-height: 49px;
+    min-height: 60px;
+  }
+
+  .floor-rail--compact .rail-item.is-active {
+    border-color: rgba(226, 208, 177, 0.55);
+    background: rgba(176, 147, 104, 0.2);
   }
 
   .back-building {
-    bottom: 5%;
-    left: 7%;
-    font-size: 9px;
+    bottom: 1.5%;
+    left: 5%;
+    min-height: 42px;
+    gap: 9px;
+    padding: 0 8px 0 0;
+    border: 1px solid rgba(235, 230, 217, 0.2);
+    border-radius: 22px;
+    background: rgba(24, 26, 23, 0.86);
+    font-size: 10px;
+    backdrop-filter: blur(12px);
   }
 
   .back-building-icon {
-    width: 27px;
-    height: 27px;
+    width: 34px;
+    height: 34px;
+    border-color: rgba(231, 224, 210, 0.48);
+  }
+
+  .interior-reset,
+  .back-building,
+  .rail-item,
+  .camera-reset {
+    -webkit-tap-highlight-color: transparent;
   }
 
   .interior-image-credit {

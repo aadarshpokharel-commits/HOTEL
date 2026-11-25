@@ -1,5 +1,5 @@
 import { ContactShadows, Environment, Lightformer, OrbitControls, RoundedBox } from "@react-three/drei";
-import { Canvas, ThreeEvent, useFrame } from "@react-three/fiber";
+import { Canvas, ThreeEvent, useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import * as THREE from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
@@ -1449,6 +1449,7 @@ function InteriorRoom({
 }) {
   const features = FEATURES[floor.id] ?? FEATURES[0];
   const isLobby = floor.id === 0;
+  const isMobile = useThree((state) => state.size.width <= 640);
   const controls = useRef<OrbitControlsImpl | null>(null);
   const desiredTarget = useRef(new THREE.Vector3(0, 1.12, 0));
   const desiredCamera = useRef(new THREE.Vector3(9.5, 10.5, 11.5));
@@ -1506,11 +1507,11 @@ function InteriorRoom({
     <>
       <color attach="background" args={["#22241f"]} />
       <fog attach="fog" args={["#22241f", 15, 28]} />
-      <ambientLight intensity={0.58} color="#fff4df" />
-      <hemisphereLight args={["#f2e7d2", "#504435", 0.9]} />
+      <ambientLight intensity={isMobile ? 0.9 : 0.58} color="#fff4df" />
+      <hemisphereLight args={["#f2e7d2", "#625747", isMobile ? 1.2 : 0.9]} />
       <directionalLight
         position={[-4, 8, 5]}
-        intensity={1.85}
+        intensity={isMobile ? 2.25 : 1.85}
         color="#ffdfaa"
         castShadow
         shadow-mapSize={[2048, 2048]}
@@ -1519,7 +1520,10 @@ function InteriorRoom({
         shadow-camera-top={8}
         shadow-camera-bottom={-7}
       />
-      <pointLight position={[0, 3.1, -3.4]} intensity={12} distance={9} color="#ffe2b6" />
+      <pointLight position={[0, 3.1, -3.4]} intensity={isMobile ? 15 : 12} distance={9} color="#ffe2b6" />
+      {isMobile && (
+        <pointLight position={[0, 7, 8]} intensity={11} distance={20} color="#f4e7d1" />
+      )}
       <Environment resolution={128} background={false}>
         <Lightformer form="rect" intensity={2} position={[-5, 6, 1]} scale={[7, 5, 1]} color="#eee5d3" />
         <Lightformer form="rect" intensity={1.8} position={[5, 4, -4]} scale={[6, 4, 1]} color="#f0d7b0" />
@@ -1597,12 +1601,12 @@ export default function InteriorScene({
     <Canvas
       key={`${floor.id}-${resetSignal}`}
       shadows
-      dpr={[1, 1.5]}
+      dpr={[1, 1.4]}
       camera={{ position: [9.5, 10.5, 11.5], fov: 40, near: 0.1, far: 60 }}
       gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }}
-      onCreated={({ gl }) => {
+      onCreated={({ gl, size }) => {
         gl.toneMapping = THREE.ACESFilmicToneMapping;
-        gl.toneMappingExposure = 1;
+        gl.toneMappingExposure = size.width <= 640 ? 1.12 : 1;
         gl.outputColorSpace = THREE.SRGBColorSpace;
         gl.shadowMap.type = THREE.PCFSoftShadowMap;
       }}
