@@ -1452,8 +1452,15 @@ function InteriorRoom({
   const isMobile = useThree((state) => state.size.width <= 640);
   const controls = useRef<OrbitControlsImpl | null>(null);
   const desiredTarget = useRef(new THREE.Vector3(0, 1.12, 0));
-  const desiredCamera = useRef(new THREE.Vector3(9.5, 10.5, 11.5));
+  const desiredCamera = useRef(
+    new THREE.Vector3(9.5, 10.5, 11.5).multiplyScalar(isMobile ? 1.45 : 1),
+  );
   const isAnimatingCamera = useRef(true);
+
+  useEffect(() => {
+    desiredCamera.current.set(9.5, 10.5, 11.5).multiplyScalar(isMobile ? 1.45 : 1);
+    isAnimatingCamera.current = true;
+  }, [isMobile]);
 
   useFrame((_, delta) => {
     if (!isAnimatingCamera.current) return;
@@ -1506,7 +1513,7 @@ function InteriorRoom({
   return (
     <>
       <color attach="background" args={["#22241f"]} />
-      <fog attach="fog" args={["#22241f", 15, 28]} />
+      <fog attach="fog" args={["#22241f", isMobile ? 24 : 15, isMobile ? 48 : 28]} />
       <ambientLight intensity={isMobile ? 0.9 : 0.58} color="#fff4df" />
       <hemisphereLight args={["#f2e7d2", "#625747", isMobile ? 1.2 : 0.9]} />
       <directionalLight
@@ -1569,13 +1576,16 @@ function InteriorRoom({
         makeDefault
         enableDamping
         dampingFactor={0.075}
-        minDistance={7}
-        maxDistance={18}
-        minPolarAngle={0.22}
-        maxPolarAngle={Math.PI / 2.03}
+        minDistance={4.5}
+        maxDistance={isMobile ? 30 : 18}
+        minPolarAngle={0.02}
+        maxPolarAngle={Math.PI - 0.02}
         target={[0, 1.12, 0]}
         rotateSpeed={0.58}
         panSpeed={0.62}
+        onStart={() => {
+          isAnimatingCamera.current = false;
+        }}
       />
     </>
   );
@@ -1604,11 +1614,15 @@ export default function InteriorScene({
       dpr={[1, 1.4]}
       camera={{ position: [9.5, 10.5, 11.5], fov: 40, near: 0.1, far: 60 }}
       gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }}
-      onCreated={({ gl, size }) => {
+      onCreated={({ gl, camera, size }) => {
         gl.toneMapping = THREE.ACESFilmicToneMapping;
         gl.toneMappingExposure = size.width <= 640 ? 1.12 : 1;
         gl.outputColorSpace = THREE.SRGBColorSpace;
         gl.shadowMap.type = THREE.PCFSoftShadowMap;
+        if (camera instanceof THREE.PerspectiveCamera) {
+          camera.fov = size.width <= 640 ? 46 : 40;
+          camera.updateProjectionMatrix();
+        }
       }}
     >
       <InteriorRoom

@@ -39,7 +39,7 @@ function FloorRail({
       aria-label="Explore hotel floors"
     >
       <div className="rail-heading">
-        <span>THE HOTEL</span>
+        <span>FLOORS</span>
         <span className="rail-line" />
         <span>{String(floors.length).padStart(2, "0")}</span>
       </div>
@@ -58,7 +58,9 @@ function FloorRail({
               <span className="rail-number">
                 {floor.id === 0 ? "G" : String(floor.id).padStart(2, "0")}
               </span>
-              <span className="rail-name">{floor.shortName}</span>
+              <span className="rail-name">
+                {floor.name.replace(/^The /, "").replace(/ Residence$/, "")}
+              </span>
               <span className="rail-dot" />
             </button>
           );
@@ -141,13 +143,10 @@ function InteriorView({
         </motion.aside>
       )}
 
-      <div className="interior-rail-wrap">
-        <FloorRail activeFloor={floor.id} onSelect={onSelectFloor} compact />
-      </div>
-
       <button
         className="interior-reset"
         type="button"
+        title="Reset view"
         onClick={() => {
           setSelectedFeature(null);
           onResetScene();
@@ -157,10 +156,21 @@ function InteriorView({
         <RotateCcw size={14} /> Reset view
       </button>
 
-      <button className="back-building" type="button" onClick={onBack}>
-        <span className="back-building-icon"><ArrowLeft size={15} /></span>
-        <span>Back to 3D building</span>
-      </button>
+      <div className="interior-bottom-controls">
+        <button
+          className="back-building"
+          type="button"
+          onClick={onBack}
+          aria-label="Back to 3D building"
+          title="Back to 3D building"
+        >
+          <span className="back-building-icon"><ArrowLeft size={15} /></span>
+          <span>Back to 3D building</span>
+        </button>
+        <div className="interior-rail-wrap">
+          <FloorRail activeFloor={floor.id} onSelect={onSelectFloor} compact />
+        </div>
+      </div>
       <div className="interior-image-credit">SELECT A DETAIL TO DISCOVER MORE</div>
     </motion.main>
   );
@@ -292,7 +302,7 @@ export default function App() {
               <section className="hero-title" aria-label="Aurelia Milano">
                 <p className="eyebrow"><span className="eyebrow-mark" />A NEW PERSPECTIVE ON MILAN</p>
                 <h1>A stay, <em>well</em><br />considered.</h1>
-                <p className="hero-subtitle">AURELIA MILANO <span>·</span> 45° 28′ N, 9° 11′ E</p>
+                <p className="hero-subtitle">AURELIA MILANO</p>
               </section>
 
               <FloorRail activeFloor={selectedFloor} onSelect={exploreFloor} />
@@ -376,7 +386,6 @@ export default function App() {
       <footer className="site-footer">
         <span>© AURELIA MILANO</span>
         <span className="footer-center">MADE OF PLACE, MADE TO FEEL LIKE YOURS</span>
-        <span>45° 28′ N&nbsp; — &nbsp;9° 11′ E</span>
       </footer>
     </div>
   );

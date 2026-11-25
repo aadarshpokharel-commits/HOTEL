@@ -775,6 +775,10 @@ a:focus-visible {
   transform: translateY(-45%);
 }
 
+.interior-bottom-controls {
+  display: contents;
+}
+
 .floor-rail--compact {
   position: relative;
   top: auto;
@@ -1003,7 +1007,7 @@ a:focus-visible {
     bottom: 11.5%;
     left: 4%;
     width: auto;
-    padding: 11px 11px 8px;
+    padding: 7px 8px 5px;
     border: 1px solid rgba(235, 230, 217, 0.24);
     border-radius: 4px;
     background: rgba(24, 26, 23, 0.9);
@@ -1013,17 +1017,17 @@ a:focus-visible {
   }
 
   .rail-heading {
-    margin: 0 3px 7px;
+    margin: 0 3px 3px;
     color: #d0c8b9;
-    font-size: 8px;
+    font-size: 7px;
   }
 
   .rail-list {
     display: flex;
-    gap: 5px;
+    gap: 3px;
     overflow-x: auto;
     overscroll-behavior-x: contain;
-    padding: 2px 0 5px;
+    padding: 1px 0 2px;
     scrollbar-width: none;
     scroll-snap-type: x proximity;
     touch-action: pan-x;
@@ -1038,29 +1042,29 @@ a:focus-visible {
   }
 
   .rail-item {
-    min-width: 78px;
-    min-height: 60px;
-    flex: 0 0 78px;
+    min-width: 54px;
+    min-height: 46px;
+    flex: 1 1 54px;
     grid-template-columns: 1fr;
-    grid-template-rows: 20px 1fr 5px;
+    grid-template-rows: 16px 1fr 4px;
     justify-items: center;
-    padding: 5px 4px 4px;
+    padding: 3px 2px 2px;
     text-align: center;
     scroll-snap-align: center;
   }
 
   .rail-number {
     width: auto;
-    font-size: 10px;
+    font-size: 9px;
   }
 
   .rail-name {
     display: block;
-    max-width: 70px;
+    max-width: 56px;
     overflow: visible;
     padding: 0;
-    font-size: 8px;
-    line-height: 1.25;
+    font-size: 7px;
+    line-height: 1.15;
     text-overflow: clip;
     white-space: normal;
   }
@@ -1153,103 +1157,83 @@ a:focus-visible {
 
   .interior-vignette {
     background:
-      linear-gradient(90deg, rgba(17, 18, 16, 0.16), rgba(17, 18, 16, 0.04) 62%, transparent),
-      linear-gradient(0deg, rgba(15, 16, 14, 0.48) 0%, rgba(15, 16, 14, 0.08) 32%, transparent 68%, rgba(15, 16, 14, 0.12) 100%);
+      linear-gradient(90deg, rgba(17, 18, 16, 0.08), transparent 68%),
+      linear-gradient(0deg, rgba(15, 16, 14, 0.32) 0%, rgba(15, 16, 14, 0.04) 30%, transparent 68%, rgba(15, 16, 14, 0.06) 100%);
     pointer-events: none;
   }
 
   .interior-topline {
-    top: 4%;
-    left: 6%;
-    gap: 9px;
-    color: #f0eadf;
-    font-size: 8px;
-  }
-
-  .interior-topline-rule {
-    width: 19px;
+    display: none;
   }
 
   .interior-copy {
-    top: 10.5%;
+    top: 3.5%;
     left: 4%;
-    width: 92%;
-    padding: 13px 15px 12px;
+    width: auto;
+    max-width: 76%;
+    padding: 8px 12px;
     border: 1px solid rgba(239, 230, 211, 0.24);
-    border-radius: 3px;
-    background: rgba(20, 22, 19, 0.82);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22);
-    backdrop-filter: blur(16px) saturate(120%);
+    border-radius: 4px;
+    background: rgba(20, 22, 19, 0.68);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.16);
+    backdrop-filter: blur(10px) saturate(115%);
+  }
+
+  .interior-copy .eyebrow,
+  .interior-description,
+  .interior-instructions {
+    display: none;
   }
 
   .interior-copy h1 {
-    margin: 8px 0 7px;
-    font-size: clamp(32px, 8.6vw, 38px);
-  }
-
-  .interior-description {
-    max-width: 42ch;
-    color: rgba(249, 246, 238, 0.88);
-    font-size: 10px;
-    line-height: 1.5;
-  }
-
-  .interior-instructions {
-    gap: 8px;
-    margin-top: 9px;
-    color: #e4d8c2;
-    font-size: 7px;
-    letter-spacing: 0.1em;
-  }
-
-  .instruction-icon {
-    width: 30px;
-    height: 30px;
-    flex: 0 0 30px;
+    margin: 0;
+    font-size: clamp(20px, 6vw, 25px);
+    line-height: 1.15;
   }
 
   .feature-card {
-    bottom: calc(11.5% + 96px);
-    left: 5%;
-    width: min(320px, 90vw);
-    gap: 6px;
-    padding: 11px 13px;
-    border-color: rgba(235, 224, 204, 0.32);
-    background: rgba(23, 25, 22, 0.9);
-  }
-
-  .feature-card strong {
-    font-size: 15px;
-  }
-
-  .feature-card > span:last-child {
-    color: #e1ddd3;
-    font-size: 9px;
-    line-height: 1.5;
+    display: none;
   }
 
   .interior-reset {
     top: 3%;
     right: 4%;
+    width: 40px;
+    height: 40px;
     min-height: 40px;
-    padding: 8px 10px;
+    justify-content: center;
+    padding: 0;
     border-color: rgba(235, 230, 217, 0.32);
     background: rgba(24, 26, 23, 0.88);
-    font-size: 9px;
+    font-size: 0;
+  }
+
+  .interior-bottom-controls {
+    position: absolute;
+    z-index: 4;
+    right: 3%;
+    bottom: 2.5%;
+    left: 3%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
 
   .interior-rail-wrap {
+    position: relative;
     top: auto;
-    right: 4%;
-    bottom: 11.5%;
-    left: 4%;
-    padding: 10px 11px 8px;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    min-width: 0;
+    flex: 1;
+    padding: 8px 8px 6px;
     border: 1px solid rgba(235, 230, 217, 0.28);
     border-radius: 4px;
-    background: rgba(24, 26, 23, 0.91);
-    box-shadow: 0 10px 32px rgba(0, 0, 0, 0.28);
+    background: rgba(24, 26, 23, 0.84);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
     transform: none;
-    backdrop-filter: blur(18px) saturate(125%);
+    backdrop-filter: blur(12px) saturate(120%);
   }
 
   .floor-rail--compact {
@@ -1270,12 +1254,31 @@ a:focus-visible {
   }
 
   .floor-rail--compact .rail-heading {
-    margin: 0 3px 7px;
+    margin: 0 3px 4px;
     color: #d0c8b9;
+    font-size: 7px;
+  }
+
+  .floor-rail--compact .rail-heading span:last-child {
+    display: none;
   }
 
   .floor-rail--compact .rail-item {
-    min-height: 60px;
+    min-width: 54px;
+    min-height: 44px;
+    flex: 1 1 54px;
+    grid-template-rows: 16px 1fr 4px;
+    padding: 3px 2px 2px;
+  }
+
+  .floor-rail--compact .rail-number {
+    font-size: 9px;
+  }
+
+  .floor-rail--compact .rail-name {
+    max-width: 54px;
+    font-size: 7px;
+    line-height: 1.15;
   }
 
   .floor-rail--compact .rail-item.is-active {
@@ -1284,21 +1287,25 @@ a:focus-visible {
   }
 
   .back-building {
-    bottom: 1.5%;
-    left: 5%;
+    position: relative;
+    bottom: auto;
+    left: auto;
     min-height: 42px;
+    flex: 0 0 auto;
+    justify-content: center;
     gap: 9px;
-    padding: 0 8px 0 0;
-    border: 1px solid rgba(235, 230, 217, 0.2);
-    border-radius: 22px;
+    padding: 0 13px 0 4px;
+    border: 1px solid rgba(235, 230, 217, 0.24);
+    border-radius: 24px;
     background: rgba(24, 26, 23, 0.86);
+    color: #eee8dc;
     font-size: 10px;
     backdrop-filter: blur(12px);
   }
 
   .back-building-icon {
-    width: 34px;
-    height: 34px;
+    width: 32px;
+    height: 32px;
     border-color: rgba(231, 224, 210, 0.48);
   }
 
