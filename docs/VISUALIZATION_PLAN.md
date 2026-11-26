@@ -119,6 +119,38 @@ Verified: `tsc` and `vite build` pass; lobby renders with no console errors
 on desktop and 375 px mobile; clicking the desk opens its card and focuses the
 camera. No new downloads were needed. Frame rate not measured (background pane).
 
+#### Residences and penthouse (done 2026-11-26)
+
+Floors 1–4 share one apartment plan (`src/components/interior/Apartment.tsx`),
+each with its own fabric palette (terracotta, sage, ink blue, caramel):
+
+| Zone | Contents | Status |
+| --- | --- | --- |
+| Floors | Herringbone parquet throughout, marble in bathroom and WC | ✅ |
+| Entrance gallery (SW) | Walnut front door, travertine console, round brass mirror, lamp, ottoman bench, marble gallery table on a round rug, pendant, plant | ✅ |
+| Dining (N, by the window) | Walnut table on travertine legs, six upholstered chairs, linear brass pendant with opal globes | ✅ |
+| Living (centre) | Bouclé sofa, travertine coffee table, two leather lounge chairs, side table and lamp, rug, walnut media wall with flush TV, walnut console, plant, pendant | ✅ |
+| Bathroom (NE) | Glass walk-in shower with rain head and linear drain, floating walnut double vanity with vessel basins, brass spouts, backlit mirrors, freestanding tub with floor-mounted filler, heated towel ladder, marble-lined walls, door | ✅ |
+| WC | Marble cistern ledge, wall-hung WC, brass flush plate, basin and spout, door | ✅ |
+| Pantry bar (SE) | Walnut base run with marble top, sink and gooseneck tap, espresso machine, wine fridge, two bar stools, pendants | ✅ |
+
+The penthouse (`src/components/interior/Penthouse.tsx`) has its own plan and
+a warmer, more natural palette (lime-washed walls, travertine floors):
+
+| Zone | Contents | Status |
+| --- | --- | --- |
+| Living | Freestanding double-sided travertine fireplace with live flickering flame; curved bouclé sofa wrapping around it; round rug; lounge chairs; plants | ✅ |
+| Dining | Round travertine pedestal table, six chairs, brass pendant | ✅ |
+| Kitchen (SW) | Tall walnut run with oven, lit coffee niche; marble waterfall island with hob and sink; three stools; pendants; front door | ✅ |
+| Terrace (SE) | Bronze-framed glazed wall, teak deck, raised travertine plunge pool with lit water, two teak loungers, olive tree, lantern, glass balustrade | ✅ |
+
+Removed: the old box-built bathroom, entry, freestanding TV slab, ceiling
+globes, blue/gold carpet and the unreachable legacy feature code.
+
+Verified: `tsc` and `vite build` pass; floors 1–5 load with no console
+errors; living room and terrace clicks open their cards; penthouse checked on
+375 px mobile. Not measured: frame rate (background pane).
+
 ### Phase 4 — Floor cutaway
 True per-floor plan: structural walls, partitions, door frames and doors,
 windows matching the exterior, corridor, ceilings where appropriate.

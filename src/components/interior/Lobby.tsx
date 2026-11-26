@@ -235,7 +235,21 @@ export function ReceptionDesk() {
 // --------------------------------------------------------------------------
 // Lounge.
 
-function ModernSofa({ position, rotation = 0, width = 2.4 }: { position: [number, number, number]; rotation?: number; width?: number }) {
+export function ModernSofa({
+  position,
+  rotation = 0,
+  width = 2.4,
+  fabric = "#d9ccb7",
+  cushion = "#e3d7c3",
+  accents = ["#8c5a3c", "#55614a"],
+}: {
+  position: [number, number, number];
+  rotation?: number;
+  width?: number;
+  fabric?: string;
+  cushion?: string;
+  accents?: [string, string];
+}) {
   const pillow = useMemo(() => {
     const g = pillowGeometry(0.5, 0.15, 0.5, 4);
     g.userData.boxUV = true;
@@ -252,39 +266,39 @@ function ModernSofa({ position, rotation = 0, width = 2.4 }: { position: [number
         <PBRMaterial set="walnut" color="#6b5443" roughness={0.9} />
       </mesh>
       <RoundedBox args={[width, 0.26, 0.95]} radius={0.04} smoothness={4} position={[0, 0.23, 0]} castShadow receiveShadow>
-        <Surface kind="fabric" color="#d9ccb7" roughness={0.98} />
+        <Surface kind="fabric" color={fabric} roughness={0.98} />
       </RoundedBox>
       {[-1, 1].map((side) => (
         <RoundedBox key={side} args={[0.18, 0.36, 0.95]} radius={0.06} smoothness={4} position={[side * (width / 2 - 0.09), 0.52, 0]} castShadow>
-          <Surface kind="fabric" color="#d9ccb7" roughness={0.98} />
+          <Surface kind="fabric" color={fabric} roughness={0.98} />
         </RoundedBox>
       ))}
       <RoundedBox args={[width, 0.42, 0.2]} radius={0.07} smoothness={4} position={[0, 0.57, -0.38]} castShadow>
-        <Surface kind="fabric" color="#d9ccb7" roughness={0.98} />
+        <Surface kind="fabric" color={fabric} roughness={0.98} />
       </RoundedBox>
       {Array.from({ length: seats }, (_, i) => {
         const x = -seatW / 2 + cushionW * (i + 0.5);
         return (
           <group key={i}>
             <RoundedBox args={[cushionW - 0.012, 0.15, 0.7]} radius={0.06} smoothness={5} position={[x, 0.43, 0.08]} castShadow>
-              <Surface kind="fabric" color="#e3d7c3" roughness={0.98} />
+              <Surface kind="fabric" color={cushion} roughness={0.98} />
             </RoundedBox>
             <RoundedBox args={[cushionW - 0.02, 0.4, 0.16]} radius={0.08} smoothness={5} position={[x, 0.68, -0.24]} rotation={[-0.14, 0, 0]} castShadow>
-              <Surface kind="fabric" color="#e3d7c3" roughness={0.98} />
+              <Surface kind="fabric" color={cushion} roughness={0.98} />
             </RoundedBox>
           </group>
         );
       })}
       {[-1, 1].map((side) => (
         <mesh key={side} geometry={pillow} position={[side * (seatW / 2 - 0.25), 0.66, -0.1]} rotation={[1.2, side * -0.25, 0]} castShadow>
-          <Surface kind="fabric" color={side < 0 ? "#8c5a3c" : "#55614a"} roughness={0.9} />
+          <Surface kind="fabric" color={side < 0 ? accents[0] : accents[1]} roughness={0.9} />
         </mesh>
       ))}
     </group>
   );
 }
 
-function CoffeeTable({ position }: { position: [number, number, number] }) {
+export function CoffeeTable({ position }: { position: [number, number, number] }) {
   const base = useMemo(() => {
     const profile = [[0, 0], [0.3, 0], [0.31, 0.02], [0.24, 0.06], [0.2, 0.2], [0.22, 0.33], [0.26, 0.37], [0, 0.37]].map(
       ([x, y]) => new THREE.Vector2(x, y),

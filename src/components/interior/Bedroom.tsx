@@ -309,7 +309,7 @@ function Curtain({ position, width, height, pleats, sheer = false, seed = 1 }: {
 }
 
 /** Everything in the bedroom except the (interactive) bed. */
-export function BedroomFurnishings() {
+export function BedroomFurnishings({ withDesk = true }: { withDesk?: boolean }) {
   const dusk = useDuskTexture();
   const art = useAbstractArt(0, 2);
   const { wallX, northZ, eastX, southZ } = BEDROOM;
@@ -323,11 +323,7 @@ export function BedroomFurnishings() {
 
   return (
     <group>
-      {/* Herringbone oak parquet and a wool rug under the bed. */}
-      <mesh position={[(wallX + eastX) / 2, 0.006, (northZ + southZ) / 2]} receiveShadow raycast={noRaycast}>
-        <boxGeometry args={[roomW, 0.012, roomD]} />
-        <PBRMaterial set="parquet" roughness={0.9} />
-      </mesh>
+      {/* Wool rug under the bed (floor finish comes from the apartment shell). */}
       <RoundedBox args={[3.0, 0.012, 2.6]} radius={0.004} smoothness={2} position={[-4.45, 0.018, BED_Z]} receiveShadow raycast={noRaycast}>
         <Surface kind="rug" color="#6f5f4f" roughness={1} />
       </RoundedBox>
@@ -426,37 +422,7 @@ export function BedroomFurnishings() {
         </mesh>
       </group>
 
-      {/* Writing desk on the east wall: walnut top on a brass frame. */}
-      <group position={[eastX - 0.29, 0, -0.6]} rotation={[0, -Math.PI / 2, 0]}>
-        <RoundedBox args={[1.05, 0.035, 0.55]} radius={0.008} smoothness={2} position={[0, 0.745, 0]} castShadow receiveShadow raycast={noRaycast}>
-          <PBRMaterial set="walnut" color="#d6bea2" roughness={0.8} />
-        </RoundedBox>
-        <mesh position={[0, 0.69, -0.18]} castShadow raycast={noRaycast}>
-          <boxGeometry args={[0.7, 0.08, 0.16]} />
-          <PBRMaterial set="walnut" color="#c8ae90" roughness={0.85} />
-        </mesh>
-        {[-0.5, 0.5].map((x) => (
-          <group key={x} position={[x, 0, 0]}>
-            {[-0.24, 0.24].map((z) => (
-              <mesh key={z} position={[0, 0.365, z]} castShadow raycast={noRaycast}>
-                <boxGeometry args={[0.016, 0.73, 0.016]} />
-                <Surface kind="brass" color="#b8925c" roughness={0.32} metalness={0.9} />
-              </mesh>
-            ))}
-            <mesh position={[0, 0.02, 0]} raycast={noRaycast}>
-              <boxGeometry args={[0.016, 0.016, 0.5]} />
-              <Surface kind="brass" color="#b8925c" roughness={0.32} metalness={0.9} />
-            </mesh>
-          </group>
-        ))}
-        <mesh position={[0.05, 0.766, 0.05]} raycast={noRaycast}>
-          <boxGeometry args={[0.5, 0.006, 0.34]} />
-          <Surface kind="satin" color="#3a2a20" roughness={0.6} />
-        </mesh>
-        <BedsideLamp position={[-0.38, 0.763, -0.14]} scale={0.9} light={false} />
-        <Model name="vaseTall" position={[0.4, 0.763, -0.16]} scale={0.7} castShadow={false} />
-      </group>
-      <Model name="deskChair" position={[eastX - 0.82, 0.012, -0.55]} rotation={[0, Math.PI / 2 + 0.15, 0]} />
+      {withDesk && <BedroomDesk />}
 
       {/* Ottoman bench at the foot of the bed. */}
       <Model name="ottoman" position={[BED_HEAD_X + BED_LENGTH + 0.48, 0.012, BED_Z]} rotation={[0, Math.PI / 2, 0]} />
@@ -471,6 +437,53 @@ export function BedroomFurnishings() {
           <meshStandardMaterial map={art} roughness={0.85} />
         </mesh>
       </group>
+    </group>
+  );
+}
+
+export const DESK_POSITION: [number, number, number] = [BEDROOM.eastX - 0.29, 0, -0.6];
+
+/** Writing desk and chair on the bedroom's east wall. */
+export function BedroomDesk() {
+  const { eastX } = BEDROOM;
+  return (
+    <group>
+      {/* Invisible hit volume (desk meshes skip raycasting). */}
+      <mesh position={[eastX - 0.55, 0.6, -0.6]}>
+        <boxGeometry args={[1.1, 1.2, 1.15]} />
+        <meshBasicMaterial transparent opacity={0} colorWrite={false} depthWrite={false} />
+      </mesh>
+        {/* Writing desk on the east wall: walnut top on a brass frame. */}
+        <group position={[eastX - 0.29, 0, -0.6]} rotation={[0, -Math.PI / 2, 0]}>
+          <RoundedBox args={[1.05, 0.035, 0.55]} radius={0.008} smoothness={2} position={[0, 0.745, 0]} castShadow receiveShadow raycast={noRaycast}>
+            <PBRMaterial set="walnut" color="#d6bea2" roughness={0.8} />
+          </RoundedBox>
+          <mesh position={[0, 0.69, -0.18]} castShadow raycast={noRaycast}>
+            <boxGeometry args={[0.7, 0.08, 0.16]} />
+            <PBRMaterial set="walnut" color="#c8ae90" roughness={0.85} />
+          </mesh>
+          {[-0.5, 0.5].map((x) => (
+            <group key={x} position={[x, 0, 0]}>
+              {[-0.24, 0.24].map((z) => (
+                <mesh key={z} position={[0, 0.365, z]} castShadow raycast={noRaycast}>
+                  <boxGeometry args={[0.016, 0.73, 0.016]} />
+                  <Surface kind="brass" color="#b8925c" roughness={0.32} metalness={0.9} />
+                </mesh>
+              ))}
+              <mesh position={[0, 0.02, 0]} raycast={noRaycast}>
+                <boxGeometry args={[0.016, 0.016, 0.5]} />
+                <Surface kind="brass" color="#b8925c" roughness={0.32} metalness={0.9} />
+              </mesh>
+            </group>
+          ))}
+          <mesh position={[0.05, 0.766, 0.05]} raycast={noRaycast}>
+            <boxGeometry args={[0.5, 0.006, 0.34]} />
+            <Surface kind="satin" color="#3a2a20" roughness={0.6} />
+          </mesh>
+          <BedsideLamp position={[-0.38, 0.763, -0.14]} scale={0.9} light={false} />
+          <Model name="vaseTall" position={[0.4, 0.763, -0.16]} scale={0.7} castShadow={false} />
+        </group>
+        <Model name="deskChair" position={[eastX - 0.82, 0.012, -0.55]} rotation={[0, Math.PI / 2 + 0.15, 0]} />
     </group>
   );
 }
