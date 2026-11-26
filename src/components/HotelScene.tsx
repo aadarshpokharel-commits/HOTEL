@@ -1,9 +1,10 @@
 import { ContactShadows, Environment, Lightformer, OrbitControls, Text } from "@react-three/drei";
 import { Canvas, ThreeEvent, useFrame, useThree } from "@react-three/fiber";
-import { useEffect, useRef, useState, type RefObject } from "react";
+import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import * as THREE from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import type { HotelFloor } from "../data/floors";
+import { Surface, SurfaceUVs } from "../three/Surface";
 
 type HotelSceneProps = {
   floors: HotelFloor[];
@@ -22,45 +23,19 @@ const GROUND_Y = 0.18;
 const GOLD = "#c8aa79";
 const BRONZE = "#66503a";
 const STONE = "#c5b79e";
-const STONE_TEXTURE = (() => {
-  const width = 192;
-  const height = 192;
-  const data = new Uint8Array(width * height * 4);
-  for (let y = 0; y < height; y += 1) {
-    for (let x = 0; x < width; x += 1) {
-      const index = (y * width + x) * 4;
-      const noise =
-        Math.sin(x * 0.31 + y * 0.19) * 2.1 +
-        Math.cos(y * 0.37 - x * 0.11) * 1.5;
-      const vein = Math.sin((x + Math.sin(y * 0.05) * 8) * 0.065) * 2.2;
-      const value = 190 + noise + vein;
-      data[index] = value;
-      data[index + 1] = value * 0.96;
-      data[index + 2] = value * 0.87;
-      data[index + 3] = 255;
-    }
-  }
-  const texture = new THREE.DataTexture(
-    data,
-    width,
-    height,
-    THREE.RGBAFormat,
-  );
-  texture.colorSpace = THREE.SRGBColorSpace;
-  texture.wrapS = THREE.RepeatWrapping;
-  texture.wrapT = THREE.RepeatWrapping;
-  texture.repeat.set(1.7, 1.25);
-  texture.needsUpdate = true;
-  return texture;
-})();
+// The exterior model is built at roughly 1:3 (a 1.02-unit floor is a ~3.2 m
+// storey), so real-world texture tiles are scaled down to match.
+const EXTERIOR_SCALE = 0.32;
+// The previous limestone map darkened and warmed its base colour; keep that tone.
+const LIMESTONE_TONE = new THREE.Color().setRGB(0.745, 0.715, 0.648, THREE.SRGBColorSpace);
 
 function LimestoneMaterial({ color = STONE }: { color?: string }) {
+  const tone = useMemo(() => new THREE.Color(color).multiply(LIMESTONE_TONE), [color]);
   return (
-    <meshStandardMaterial
-      color={color}
-      map={STONE_TEXTURE}
-      bumpMap={STONE_TEXTURE}
-      bumpScale={0.006}
+    <Surface
+      kind="limestone"
+      textureScale={EXTERIOR_SCALE}
+      color={tone}
       roughness={0.82}
       metalness={0.015}
     />
@@ -68,7 +43,15 @@ function LimestoneMaterial({ color = STONE }: { color?: string }) {
 }
 
 function BronzeMaterial({ color = BRONZE }: { color?: string }) {
-  return <meshStandardMaterial color={color} roughness={0.38} metalness={0.72} />;
+  return (
+    <Surface
+      kind="brass"
+      textureScale={EXTERIOR_SCALE}
+      color={color}
+      roughness={0.38}
+      metalness={0.72}
+    />
+  );
 }
 
 function FloorLevel({
@@ -118,31 +101,31 @@ function FloorLevel({
           onHover(null);
         }}
       >
-        <boxGeometry args={[width + 0.15, FLOOR_HEIGHT - 0.12, depth + 0.15]} />
+        <bevelBoxGeometry args={[width + 0.15, FLOOR_HEIGHT - 0.12, depth + 0.15]} />
         <meshBasicMaterial transparent opacity={0} colorWrite={false} depthWrite={false} />
       </mesh>
 
       <mesh position={[0, 0.045, 0]} castShadow receiveShadow>
-        <boxGeometry args={[width + 0.24, 0.09, depth + 0.26]} />
+        <bevelBoxGeometry args={[width + 0.24, 0.09, depth + 0.26]} />
         <LimestoneMaterial color={highlight ? "#d1c2a8" : isDimmed ? "#7a766e" : "#c5b79e"} />
       </mesh>
       <mesh position={[0, 0.096, 0]} castShadow>
-        <boxGeometry args={[width + 0.18, 0.018, depth + 0.2]} />
+        <bevelBoxGeometry args={[width + 0.18, 0.018, depth + 0.2]} />
         <BronzeMaterial color="#71604b" />
       </mesh>
       <mesh position={[0, FLOOR_HEIGHT - 0.025, 0]} castShadow>
-        <boxGeometry args={[width + 0.2, 0.055, depth + 0.22]} />
+        <bevelBoxGeometry args={[width + 0.2, 0.055, depth + 0.22]} />
         <LimestoneMaterial color={highlight ? "#d8c8aa" : "#b7a88e"} />
       </mesh>
 
       <mesh position={[0, FLOOR_HEIGHT * 0.49, -depth / 2 + 0.07]} castShadow receiveShadow>
-        <boxGeometry args={[width, FLOOR_HEIGHT - 0.18, 0.14]} />
+        <bevelBoxGeometry args={[width, FLOOR_HEIGHT - 0.18, 0.14]} />
         <LimestoneMaterial color={isDimmed ? "#77736b" : "#c9bea9"} />
       </mesh>
       {[-1, 1].map((side) => (
         <group key={side} position={[side * (width / 2 - 0.105), FLOOR_HEIGHT / 2, 0]}>
           <mesh castShadow>
-            <boxGeometry args={[0.21, FLOOR_HEIGHT - 0.11, depth]} />
+            <bevelBoxGeometry args={[0.21, FLOOR_HEIGHT - 0.11, depth]} />
             <LimestoneMaterial color={isDimmed ? "#77736b" : "#c7b99f"} />
           </mesh>
           {[-1.02, 0, 1.02].map((windowZ, index) => (
@@ -152,8 +135,8 @@ function FloorLevel({
               rotation={[0, side * Math.PI / 2, 0]}
             >
               <mesh position={[0, 0, -0.02]}>
-                <boxGeometry args={[0.54, 0.72, 0.045]} />
-                <meshStandardMaterial color="#252725" roughness={0.8} />
+                <bevelBoxGeometry args={[0.54, 0.72, 0.045]} />
+                <Surface kind="satin" textureScale={EXTERIOR_SCALE} color="#252725" roughness={0.8} />
               </mesh>
               <mesh position={[0, 0, 0.01]}>
                 <planeGeometry args={[0.45, 0.62]} />
@@ -170,24 +153,24 @@ function FloorLevel({
               </mesh>
               {[-0.24, 0.24].map((frameX) => (
                 <mesh key={frameX} position={[frameX, 0, 0.035]}>
-                  <boxGeometry args={[0.035, 0.68, 0.045]} />
+                  <bevelBoxGeometry args={[0.035, 0.68, 0.045]} />
                   <BronzeMaterial color="#514538" />
                 </mesh>
               ))}
               {[-0.33, 0.33].map((frameY) => (
                 <mesh key={frameY} position={[0, frameY, 0.035]}>
-                  <boxGeometry args={[0.5, 0.035, 0.045]} />
+                  <bevelBoxGeometry args={[0.5, 0.035, 0.045]} />
                   <BronzeMaterial color="#514538" />
                 </mesh>
               ))}
               <mesh position={[0, 0, 0.035]}>
-                <boxGeometry args={[0.022, 0.62, 0.045]} />
+                <bevelBoxGeometry args={[0.022, 0.62, 0.045]} />
                 <BronzeMaterial color="#66553f" />
               </mesh>
             </group>
           ))}
           <mesh position={[0, -0.035, depth / 2 + 0.012]}>
-            <boxGeometry args={[0.045, FLOOR_HEIGHT - 0.2, 0.025]} />
+            <bevelBoxGeometry args={[0.045, FLOOR_HEIGHT - 0.2, 0.025]} />
             <BronzeMaterial color="#8b7557" />
           </mesh>
         </group>
@@ -206,8 +189,8 @@ function FloorLevel({
         return (
           <group key={index} position={[x, 0, frontZ]}>
             <mesh position={[0, FLOOR_HEIGHT * 0.49, -0.07]}>
-              <boxGeometry args={[widthThisWindow + 0.13, FLOOR_HEIGHT - 0.2, 0.13]} />
-              <meshStandardMaterial color="#292b28" roughness={0.86} />
+              <bevelBoxGeometry args={[widthThisWindow + 0.13, FLOOR_HEIGHT - 0.2, 0.13]} />
+              <Surface kind="satin" textureScale={EXTERIOR_SCALE} color="#292b28" roughness={0.86} />
             </mesh>
             <mesh position={[0, baseY + winHeight / 2, 0]}>
               <planeGeometry args={[widthThisWindow, winHeight]} />
@@ -224,7 +207,7 @@ function FloorLevel({
             </mesh>
             {[-widthThisWindow / 2, widthThisWindow / 2].map((frameX) => (
               <mesh key={frameX} position={[frameX, baseY + winHeight / 2, 0.014]}>
-                <boxGeometry args={[0.042, winHeight + 0.055, 0.055]} />
+                <bevelBoxGeometry args={[0.042, winHeight + 0.055, 0.055]} />
                 <BronzeMaterial color="#514538" />
               </mesh>
             ))}
@@ -234,17 +217,39 @@ function FloorLevel({
               [0, baseY + winHeight * 0.52, widthThisWindow, 0.022],
             ].map(([frameX, frameY, frameWidth, frameHeight], frameIndex) => (
               <mesh key={frameIndex} position={[frameX, frameY, 0.025]}>
-                <boxGeometry args={[frameWidth, frameHeight, 0.055]} />
+                <bevelBoxGeometry args={[frameWidth, frameHeight, 0.055]} />
                 <BronzeMaterial color="#554838" />
               </mesh>
             ))}
             <mesh position={[0, baseY + winHeight * 0.52, 0.036]}>
-              <boxGeometry args={[0.024, winHeight, 0.035]} />
+              <bevelBoxGeometry args={[0.024, winHeight, 0.035]} />
               <BronzeMaterial color="#66553f" />
             </mesh>
+            {/* Stone sill with a slight projection, and sheer drapes inside the glass. */}
+            <mesh position={[0, baseY - 0.058, 0.045]} castShadow>
+              <bevelBoxGeometry args={[widthThisWindow + 0.16, 0.032, 0.1]} />
+              <LimestoneMaterial color="#d4c6ab" />
+            </mesh>
+            {floor.id > 0 &&
+              [-1, 1].map((side) => (
+                <mesh
+                  key={side}
+                  position={[side * (widthThisWindow / 2 - widthThisWindow * 0.09), baseY + winHeight / 2, -0.003]}
+                >
+                  <bevelBoxGeometry args={[widthThisWindow * 0.16, winHeight - 0.03, 0.003]} />
+                  <Surface
+                    kind="linen"
+                    textureScale={EXTERIOR_SCALE}
+                    color="#d8c9ae"
+                    roughness={0.95}
+                    emissive="#6b4f2c"
+                    emissiveIntensity={0.18}
+                  />
+                </mesh>
+              ))}
             {floor.id === 0 && (
               <mesh position={[0, FLOOR_HEIGHT * 0.47, 0.032]}>
-                <boxGeometry args={[widthThisWindow * 0.42, 0.035, 0.024]} />
+                <bevelBoxGeometry args={[widthThisWindow * 0.42, 0.035, 0.024]} />
                 <meshStandardMaterial
                   color="#f4d5a0"
                   emissive="#d89c51"
@@ -259,7 +264,7 @@ function FloorLevel({
 
       {floor.id === 3 && (
         <mesh position={[0, FLOOR_HEIGHT * 0.51, depth / 2 + 0.025]}>
-          <boxGeometry args={[0.06, FLOOR_HEIGHT - 0.2, 0.11]} />
+          <bevelBoxGeometry args={[0.06, FLOOR_HEIGHT - 0.2, 0.11]} />
           <BronzeMaterial color="#8d785e" />
         </mesh>
       )}
@@ -267,15 +272,15 @@ function FloorLevel({
       {hasBalcony && (
         <group position={[0, 0.13, depth / 2 + 0.37]}>
           <mesh position={[0, 0, 0.14]} castShadow receiveShadow>
-            <boxGeometry args={[balconyWidth, 0.075, 0.93]} />
+            <bevelBoxGeometry args={[balconyWidth, 0.075, 0.93]} />
             <LimestoneMaterial color="#b4a58c" />
           </mesh>
           <mesh position={[0, 0.49, 0.57]} castShadow>
-            <boxGeometry args={[balconyWidth - 0.08, 0.025, 0.025]} />
+            <bevelBoxGeometry args={[balconyWidth - 0.08, 0.025, 0.025]} />
             <BronzeMaterial color="#65533d" />
           </mesh>
           <mesh position={[0, 0.25, 0.57]}>
-            <boxGeometry args={[balconyWidth - 0.15, 0.39, 0.018]} />
+            <bevelBoxGeometry args={[balconyWidth - 0.15, 0.39, 0.018]} />
             <meshPhysicalMaterial
               color="#b5c5c1"
               roughness={0.16}
@@ -293,20 +298,20 @@ function FloorLevel({
             const postX = -((count - 1) * 0.56) / 2 + index * 0.56;
             return (
               <mesh key={index} position={[postX, 0.25, 0.58]}>
-                <boxGeometry args={[0.018, 0.4, 0.025]} />
+                <bevelBoxGeometry args={[0.018, 0.4, 0.025]} />
                 <BronzeMaterial color="#806a4d" />
               </mesh>
             );
           })}
           {[-1, 1].map((side) => (
             <mesh key={side} position={[side * (balconyWidth / 2 - 0.035), 0.22, 0.12]}>
-              <boxGeometry args={[0.05, 0.045, 0.82]} />
+              <bevelBoxGeometry args={[0.05, 0.045, 0.82]} />
               <BronzeMaterial color="#67543e" />
             </mesh>
           ))}
           <mesh position={[0, -0.047, 0.2]}>
-            <boxGeometry args={[balconyWidth * 0.72, 0.014, 0.022]} />
-            <meshStandardMaterial color="#8e7c62" roughness={0.48} metalness={0.4} />
+            <bevelBoxGeometry args={[balconyWidth * 0.72, 0.014, 0.022]} />
+            <Surface kind="brass" textureScale={EXTERIOR_SCALE} color="#8e7c62" roughness={0.48} metalness={0.4} />
           </mesh>
         </group>
       )}
@@ -314,17 +319,17 @@ function FloorLevel({
       {floor.id === 0 && (
         <group position={[0, 0, depth / 2 + 0.54]}>
           <mesh position={[0, 0.66, 0.02]} castShadow>
-            <boxGeometry args={[2.6, 0.075, 0.92]} />
+            <bevelBoxGeometry args={[2.6, 0.075, 0.92]} />
             <LimestoneMaterial color="#b5a586" />
           </mesh>
           {[-1.15, 1.15].map((x) => (
             <mesh key={x} position={[x, 0.31, 0.02]}>
-              <boxGeometry args={[0.055, 0.65, 0.08]} />
+              <bevelBoxGeometry args={[0.055, 0.65, 0.08]} />
               <BronzeMaterial color="#735c40" />
             </mesh>
           ))}
           <mesh position={[0, 0.98, 0.4]} castShadow>
-            <boxGeometry args={[3.1, 0.045, 0.025]} />
+            <bevelBoxGeometry args={[3.1, 0.045, 0.025]} />
             <meshStandardMaterial
               color="#ffd899"
               emissive="#e8a84f"
@@ -337,8 +342,8 @@ function FloorLevel({
 
       {Array.from({ length: 3 }, (_, index) => (
         <mesh key={index} position={[-width * 0.32 + index * width * 0.32, 0.13, -depth / 2 + 0.1]}>
-          <boxGeometry args={[width * 0.18, 0.018, 0.012]} />
-          <meshStandardMaterial color="#8f806b" roughness={0.82} />
+          <bevelBoxGeometry args={[width * 0.18, 0.018, 0.012]} />
+          <Surface kind="limestone" textureScale={EXTERIOR_SCALE} color="#8f806b" roughness={0.82} />
         </mesh>
       ))}
 
@@ -348,7 +353,7 @@ function FloorLevel({
           scale={[1.012, 1.015, 1.016]}
           raycast={() => null}
         >
-          <boxGeometry args={[width + 0.2, FLOOR_HEIGHT - 0.1, depth + 0.23]} />
+          <bevelBoxGeometry args={[width + 0.2, FLOOR_HEIGHT - 0.1, depth + 0.23]} />
           <meshBasicMaterial
             color={floorOutlineMaterial}
             wireframe
@@ -445,17 +450,17 @@ function Building({
   return (
     <group>
       <mesh position={[0, -0.04, 0]} receiveShadow castShadow>
-        <boxGeometry args={[BUILDING_WIDTH + 0.7, 0.16, BUILDING_DEPTH + 0.66]} />
+        <bevelBoxGeometry args={[BUILDING_WIDTH + 0.7, 0.16, BUILDING_DEPTH + 0.66]} />
         <LimestoneMaterial color="#9d927d" />
       </mesh>
       <mesh position={[0, -0.16, 0]} receiveShadow>
-        <boxGeometry args={[BUILDING_WIDTH + 1.1, 0.09, BUILDING_DEPTH + 1.08]} />
-        <meshStandardMaterial color="#34332e" roughness={0.78} metalness={0.08} />
+        <bevelBoxGeometry args={[BUILDING_WIDTH + 1.1, 0.09, BUILDING_DEPTH + 1.08]} />
+        <Surface kind="limestone" textureScale={EXTERIOR_SCALE} color="#34332e" roughness={0.78} metalness={0.08} />
       </mesh>
       {Array.from({ length: 11 }, (_, index) => (
         <mesh key={index} position={[-2.7 + index * 0.54, -0.109, BUILDING_DEPTH / 2 + 0.77]}>
-          <boxGeometry args={[0.5, 0.012, 0.9]} />
-          <meshStandardMaterial
+          <bevelBoxGeometry args={[0.5, 0.012, 0.9]} />
+          <Surface kind="limestone" textureScale={EXTERIOR_SCALE}
             color={index % 2 ? "#716653" : "#8d7e66"}
             roughness={0.76}
           />
@@ -464,37 +469,37 @@ function Building({
       {[-1, 1].map((side) => (
         <group key={side} position={[side * 2.85, 0, BUILDING_DEPTH / 2 + 0.55]}>
           <mesh position={[0, 0.26, 0]} castShadow receiveShadow>
-            <boxGeometry args={[0.66, 0.52, 0.7]} />
+            <bevelBoxGeometry args={[0.66, 0.52, 0.7]} />
             <LimestoneMaterial color="#9e8c70" />
           </mesh>
           <mesh position={[0, 0.59, 0]}>
             <cylinderGeometry args={[0.24, 0.26, 0.1, 20]} />
-            <meshStandardMaterial color="#514536" roughness={0.92} />
+            <Surface kind="plaster" textureScale={EXTERIOR_SCALE} color="#514536" roughness={0.92} />
           </mesh>
           {[-0.12, 0, 0.12].map((x, index) => (
             <mesh key={x} position={[x, 0.92 + (index === 1 ? 0.18 : 0), 0]} castShadow>
               <sphereGeometry args={[0.21, 10, 12]} />
-              <meshStandardMaterial color={index === 1 ? "#566449" : "#667452"} roughness={0.88} />
+              <Surface kind="foliage" textureScale={EXTERIOR_SCALE} color={index === 1 ? "#566449" : "#667452"} roughness={0.88} />
             </mesh>
           ))}
         </group>
       ))}
       <mesh position={[0, 0.15, BUILDING_DEPTH / 2 + 1.33]} receiveShadow>
-        <boxGeometry args={[2.9, 0.16, 0.72]} />
+        <bevelBoxGeometry args={[2.9, 0.16, 0.72]} />
         <LimestoneMaterial color="#c7b89d" />
       </mesh>
       <mesh position={[0, 0.238, BUILDING_DEPTH / 2 + 1.33]}>
-        <boxGeometry args={[2.75, 0.014, 0.56]} />
-        <meshStandardMaterial color="#72624b" roughness={0.58} />
+        <bevelBoxGeometry args={[2.75, 0.014, 0.56]} />
+        <Surface kind="rug" textureScale={EXTERIOR_SCALE} color="#72624b" roughness={0.58} />
       </mesh>
       {[-1.28, 1.28].map((x) => (
         <mesh key={x} position={[x, 0.49, BUILDING_DEPTH / 2 + 1.33]} castShadow>
-          <boxGeometry args={[0.035, 0.62, 0.04]} />
+          <bevelBoxGeometry args={[0.035, 0.62, 0.04]} />
           <BronzeMaterial color="#725d40" />
         </mesh>
       ))}
       <mesh position={[0, 0.82, BUILDING_DEPTH / 2 + 1.33]}>
-        <boxGeometry args={[2.67, 0.025, 0.035]} />
+        <bevelBoxGeometry args={[2.67, 0.025, 0.035]} />
         <meshStandardMaterial
           color="#f0c983"
           emissive="#d89c51"
@@ -517,51 +522,51 @@ function Building({
 
       <group position={[0, GROUND_Y + floors.length * FLOOR_HEIGHT + 0.12, 0]}>
         <mesh castShadow receiveShadow>
-          <boxGeometry args={[4.32, 0.11, 3.13]} />
+          <bevelBoxGeometry args={[4.32, 0.11, 3.13]} />
           <LimestoneMaterial color="#b9aa8f" />
         </mesh>
         <mesh position={[0, 0.15, -0.15]} castShadow>
-          <boxGeometry args={[3.9, 0.08, 2.72]} />
+          <bevelBoxGeometry args={[3.9, 0.08, 2.72]} />
           <BronzeMaterial color="#665945" />
         </mesh>
         <mesh position={[0, 0.24, -0.15]} castShadow>
-          <boxGeometry args={[3.68, 0.075, 2.48]} />
+          <bevelBoxGeometry args={[3.68, 0.075, 2.48]} />
           <LimestoneMaterial color="#c4b698" />
         </mesh>
         <mesh position={[0, 0.3, -0.15]}>
-          <boxGeometry args={[3.6, 0.02, 2.4]} />
-          <meshStandardMaterial color="#656253" roughness={0.62} />
+          <bevelBoxGeometry args={[3.6, 0.02, 2.4]} />
+          <Surface kind="satin" textureScale={EXTERIOR_SCALE} color="#656253" roughness={0.62} />
         </mesh>
         {[-1.55, -0.8, 0, 0.8, 1.55].map((x) => (
           <mesh key={x} position={[x, 0.36, -0.15]}>
-            <boxGeometry args={[0.026, 0.012, 2.38]} />
-            <meshStandardMaterial color="#98866a" roughness={0.45} metalness={0.35} />
+            <bevelBoxGeometry args={[0.026, 0.012, 2.38]} />
+            <Surface kind="brass" textureScale={EXTERIOR_SCALE} color="#98866a" roughness={0.45} metalness={0.35} />
           </mesh>
         ))}
         {[-1, 1].map((side) => (
           <group key={side} position={[side * 1.72, 0.36, 0]}>
             <mesh position={[0, 0.045, -0.28]} castShadow>
-              <boxGeometry args={[0.48, 0.1, 0.52]} />
+              <bevelBoxGeometry args={[0.48, 0.1, 0.52]} />
               <LimestoneMaterial color="#a59579" />
             </mesh>
             <mesh position={[0, 0.15, -0.28]}>
               <cylinderGeometry args={[0.18, 0.18, 0.08, 18]} />
-              <meshStandardMaterial color="#40382e" roughness={0.9} />
+              <Surface kind="plaster" textureScale={EXTERIOR_SCALE} color="#40382e" roughness={0.9} />
             </mesh>
             {[-0.09, 0.09].map((x) => (
               <mesh key={x} position={[x, 0.39, -0.28]} castShadow>
                 <sphereGeometry args={[0.16, 9, 10]} />
-                <meshStandardMaterial color="#607150" roughness={0.9} />
+                <Surface kind="foliage" textureScale={EXTERIOR_SCALE} color="#607150" roughness={0.9} />
               </mesh>
             ))}
           </group>
         ))}
         <mesh position={[0, 0.1, 0.65]} castShadow>
-          <boxGeometry args={[2.1, 0.12, 0.62]} />
+          <bevelBoxGeometry args={[2.1, 0.12, 0.62]} />
           <LimestoneMaterial color="#ab9a7e" />
         </mesh>
         <mesh position={[0, 0.18, 0.65]}>
-          <boxGeometry args={[1.96, 0.018, 0.52]} />
+          <bevelBoxGeometry args={[1.96, 0.018, 0.52]} />
           <BronzeMaterial color="#6e5940" />
         </mesh>
       </group>
@@ -630,6 +635,7 @@ export default function HotelScene({
         <Lightformer form="rect" intensity={1.7} position={[5, 4, 4]} scale={[6, 4, 1]} color="#f3d9ac" />
         <Lightformer form="rect" intensity={1.4} position={[0, 6, 0]} scale={[10, 0.5, 1]} color="#fff4dd" />
       </Environment>
+      <SurfaceUVs />
       <Building
         floors={floors}
         selectedFloor={selectedFloor}

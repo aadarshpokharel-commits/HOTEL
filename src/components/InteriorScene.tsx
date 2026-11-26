@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import * as THREE from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import type { HotelFloor } from "../data/floors";
+import { Surface, SurfaceUVs } from "../three/Surface";
 
 export type InteriorFeature = {
   id: string;
@@ -58,53 +59,6 @@ const FEATURES: Record<number, InteriorFeature[]> = {
     { id: "terrace", name: "The terrace", note: "A private terrace, just beyond your own quiet corner." },
   ],
 };
-
-function createSurfaceTexture(surface: "oak" | "walnut" | "linen" | "stone", size = 256) {
-  const data = new Uint8Array(size * size * 4);
-  const palette = {
-    oak: [146, 124, 96],
-    walnut: [115, 82, 54],
-    linen: [218, 210, 196],
-    stone: [190, 181, 163],
-  }[surface];
-  for (let y = 0; y < size; y += 1) {
-    for (let x = 0; x < size; x += 1) {
-      const index = (y * size + x) * 4;
-      const wave = surface === "oak" || surface === "walnut"
-        ? Math.sin(y * 0.21 + Math.sin(x * 0.045) * 1.8) * 3 +
-          Math.sin(y * 0.73 + x * 0.025) * 1.4
-        : surface === "stone"
-          ? Math.sin(x * 0.055 + Math.sin(y * 0.035) * 2.8) * 2.4
-          : Math.sin(x * 0.82) * Math.sin(y * 0.74) * 2.1;
-      const grain = Math.sin(x * 127.1 + y * 311.7) * 43758.5453;
-      const noise = ((grain - Math.floor(grain)) - 0.5) * (surface === "linen" ? 9 : 6);
-      let seam = 0;
-      if (surface === "oak") {
-        const row = y % 16;
-        const column = (x + (Math.floor(y / 16) % 2) * 64) % 128;
-        if (row < 2 || column < 2) seam = -23;
-        else if (row < 4 || column < 4) seam = -7;
-      }
-      const variation = wave + noise + seam;
-      data[index] = Math.max(0, Math.min(255, palette[0] + variation));
-      data[index + 1] = Math.max(0, Math.min(255, palette[1] + variation * 0.94));
-      data[index + 2] = Math.max(0, Math.min(255, palette[2] + variation * 0.82));
-      data[index + 3] = 255;
-    }
-  }
-  const texture = new THREE.DataTexture(data, size, size, THREE.RGBAFormat);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  texture.wrapS = THREE.RepeatWrapping;
-  texture.wrapT = THREE.RepeatWrapping;
-  texture.repeat.set(surface === "oak" ? 4 : 1, surface === "oak" ? 2 : 1);
-  texture.needsUpdate = true;
-  return texture;
-}
-
-const OAK_TEXTURE = createSurfaceTexture("oak");
-const WALNUT_TEXTURE = createSurfaceTexture("walnut");
-const LINEN_TEXTURE = createSurfaceTexture("linen");
-const STONE_TEXTURE = createSurfaceTexture("stone");
 
 function Interactive({
   feature,
@@ -175,70 +129,64 @@ function FloorSurface() {
   return (
     <group>
       <mesh position={[0, -0.13, 0]} receiveShadow>
-        <boxGeometry args={[13, 0.25, 9.2]} />
-        <meshStandardMaterial
-          map={OAK_TEXTURE}
-          bumpMap={OAK_TEXTURE}
-          bumpScale={0.009}
-          color="#fffaf0"
+        <bevelBoxGeometry args={[13, 0.25, 9.2]} />
+        <Surface kind="oak"
+          color="#927a5a"
           roughness={0.78}
         />
       </mesh>
       <group position={[1.8, 0.012, 0.65]} receiveShadow>
         <mesh receiveShadow>
-          <boxGeometry args={[4.8, 0.025, 3.4]} />
-          <meshStandardMaterial color="#17394b" roughness={0.94} />
+          <bevelBoxGeometry args={[4.8, 0.025, 3.4]} />
+          <Surface kind="rug" color="#17394b" roughness={0.94} />
         </mesh>
         <mesh position={[0, 0.015, 0]} receiveShadow>
-          <boxGeometry args={[4.7, 0.012, 3.3]} />
-          <meshStandardMaterial color="#c99d54" roughness={0.68} metalness={0.08} />
+          <bevelBoxGeometry args={[4.7, 0.012, 3.3]} />
+          <Surface kind="rug" color="#c99d54" roughness={0.68} metalness={0.08} />
         </mesh>
         <mesh position={[0, 0.026, 0]} receiveShadow>
-          <boxGeometry args={[4.58, 0.012, 3.18]} />
-          <meshStandardMaterial
-            map={LINEN_TEXTURE}
-            bumpMap={LINEN_TEXTURE}
-            bumpScale={0.004}
-            color="#e5ddcf"
+          <bevelBoxGeometry args={[4.58, 0.012, 3.18]} />
+          <Surface kind="rug"
+            color="#c4b69f"
             roughness={0.98}
           />
         </mesh>
         {[-2.16, 2.16].map((x) => (
           <mesh key={`carpet-side-border-${x}`} position={[x, 0.035, 0]}>
-            <boxGeometry args={[0.035, 0.006, 2.78]} />
-            <meshStandardMaterial color="#17394b" roughness={0.92} />
+            <bevelBoxGeometry args={[0.035, 0.006, 2.78]} />
+            <Surface kind="rug" color="#17394b" roughness={0.92} />
           </mesh>
         ))}
         {[-1.36, 1.36].map((z) => (
           <mesh key={`carpet-end-border-${z}`} position={[0, 0.035, z]}>
-            <boxGeometry args={[4.35, 0.006, 0.035]} />
-            <meshStandardMaterial color="#17394b" roughness={0.92} />
+            <bevelBoxGeometry args={[4.35, 0.006, 0.035]} />
+            <Surface kind="rug" color="#17394b" roughness={0.92} />
           </mesh>
         ))}
         {[-2.06, 2.06].map((x) => (
           <mesh key={`carpet-gold-side-${x}`} position={[x, 0.039, 0]}>
-            <boxGeometry args={[0.012, 0.004, 2.62]} />
-            <meshStandardMaterial color="#c99d54" roughness={0.55} metalness={0.18} />
+            <bevelBoxGeometry args={[0.012, 0.004, 2.62]} />
+            <Surface kind="rug" color="#c99d54" roughness={0.55} metalness={0.18} />
           </mesh>
         ))}
         {[-1.26, 1.26].map((z) => (
           <mesh key={`carpet-gold-end-${z}`} position={[0, 0.039, z]}>
-            <boxGeometry args={[4.1, 0.004, 0.012]} />
-            <meshStandardMaterial color="#c99d54" roughness={0.55} metalness={0.18} />
+            <bevelBoxGeometry args={[4.1, 0.004, 0.012]} />
+            <Surface kind="rug" color="#c99d54" roughness={0.55} metalness={0.18} />
           </mesh>
         ))}
         <group position={[0, 0.042, 0]}>
           <mesh rotation={[-Math.PI / 2, 0, 0]}>
             <ringGeometry args={[0.3, 0.34, 48]} />
-            <meshStandardMaterial color="#c99d54" roughness={0.55} metalness={0.18} side={THREE.DoubleSide} />
+            <Surface kind="rug" color="#c99d54" roughness={0.55} metalness={0.18} side={THREE.DoubleSide} />
           </mesh>
           <mesh rotation={[-Math.PI / 2, 0, 0]}>
             <ringGeometry args={[0.17, 0.19, 40]} />
-            <meshStandardMaterial color="#17394b" roughness={0.92} side={THREE.DoubleSide} />
+            <Surface kind="rug" color="#17394b" roughness={0.92} side={THREE.DoubleSide} />
           </mesh>
           <mesh position={[0, 0.002, 0]} rotation={[-Math.PI / 2, 0, 0]}>
             <circleGeometry args={[0.1, 32]} />
-            <meshStandardMaterial color="#c99d54" roughness={0.55} metalness={0.18} />
+            <Surface kind="rug" color="#c99d54" roughness={0.55} metalness={0.18} />
           </mesh>
           {[-1, 1].flatMap((side) =>
             [-1, 1].map((depthSide) => (
@@ -247,8 +195,8 @@ function FloorSurface() {
                 position={[side * 1.9, 0.002, depthSide * 1.12]}
                 rotation={[0, Math.PI / 4, 0]}
               >
-                <boxGeometry args={[0.16, 0.004, 0.16]} />
-                <meshStandardMaterial color="#c99d54" roughness={0.55} metalness={0.18} />
+                <bevelBoxGeometry args={[0.16, 0.004, 0.16]} />
+                <Surface kind="rug" color="#c99d54" roughness={0.55} metalness={0.18} />
               </mesh>
             )),
           )}
@@ -263,31 +211,30 @@ function RoomShell() {
     <group>
       <FloorSurface />
       <mesh position={[-6.15, 1.18, 0]} receiveShadow>
-        <boxGeometry args={[0.22, 2.36, 9.1]} />
-        <meshStandardMaterial map={STONE_TEXTURE} color="#cfc5b5" roughness={0.92} />
+        <bevelBoxGeometry args={[0.22, 2.36, 9.1]} />
+        <Surface kind="plaster" color="#9a8c74" roughness={0.92} />
       </mesh>
       <mesh position={[6.15, 0.82, -1.7]} receiveShadow>
-        <boxGeometry args={[0.2, 0.72, 5.7]} />
-        <meshStandardMaterial
-          map={STONE_TEXTURE}
-          color="#c8bdac"
+        <bevelBoxGeometry args={[0.2, 0.72, 5.7]} />
+        <Surface kind="plaster"
+          color="#95866e"
           roughness={0.92}
         />
       </mesh>
       <mesh position={[-3.9, 1.65, -4.45]} receiveShadow>
-        <boxGeometry args={[4.5, 3.3, 0.18]} />
-        <meshStandardMaterial map={STONE_TEXTURE} color="#d7cebf" roughness={0.92} />
+        <bevelBoxGeometry args={[4.5, 3.3, 0.18]} />
+        <Surface kind="plaster" color="#a0927a" roughness={0.92} />
       </mesh>
       <mesh position={[4.15, 1.65, -4.45]} receiveShadow>
-        <boxGeometry args={[3.9, 3.3, 0.18]} />
-        <meshStandardMaterial map={STONE_TEXTURE} color="#d7cebf" roughness={0.92} />
+        <bevelBoxGeometry args={[3.9, 3.3, 0.18]} />
+        <Surface kind="plaster" color="#a0927a" roughness={0.92} />
       </mesh>
       <mesh position={[0.1, 0.36, -4.39]} receiveShadow>
-        <boxGeometry args={[3.45, 0.68, 0.22]} />
-        <meshStandardMaterial color="#d2c7b7" roughness={0.92} />
+        <bevelBoxGeometry args={[3.45, 0.68, 0.22]} />
+        <Surface kind="plaster" color="#d2c7b7" roughness={0.92} />
       </mesh>
       <mesh position={[0.1, 1.97, -4.47]} castShadow receiveShadow>
-        <boxGeometry args={[3.35, 2.55, 0.055]} />
+        <bevelBoxGeometry args={[3.35, 2.55, 0.055]} />
         <meshStandardMaterial
           color="#354a48"
           roughness={0.18}
@@ -298,59 +245,59 @@ function RoomShell() {
       </mesh>
       {[-1.53, 0.1, 1.73].map((x) => (
         <mesh key={x} position={[x, 1.97, -4.41]}>
-          <boxGeometry args={[0.045, 2.6, 0.075]} />
-          <meshStandardMaterial color="#9d805c" metalness={0.6} roughness={0.3} />
+          <bevelBoxGeometry args={[0.045, 2.6, 0.075]} />
+          <Surface kind="brass" color="#9d805c" metalness={0.6} roughness={0.3} />
         </mesh>
       ))}
       <mesh position={[0.1, 3.27, -4.41]}>
-        <boxGeometry args={[3.35, 0.05, 0.075]} />
-        <meshStandardMaterial color="#9d805c" metalness={0.6} roughness={0.3} />
+        <bevelBoxGeometry args={[3.35, 0.05, 0.075]} />
+        <Surface kind="brass" color="#9d805c" metalness={0.6} roughness={0.3} />
       </mesh>
       <mesh position={[-6.005, 0.14, 0]}>
-        <boxGeometry args={[0.065, 0.2, 8.95]} />
-        <meshStandardMaterial color="#a98b63" roughness={0.4} metalness={0.22} />
+        <bevelBoxGeometry args={[0.065, 0.2, 8.95]} />
+        <Surface kind="brass" color="#a98b63" roughness={0.4} metalness={0.22} />
       </mesh>
       <mesh position={[6.02, 0.14, -1.7]}>
-        <boxGeometry args={[0.065, 0.2, 5.55]} />
-        <meshStandardMaterial color="#a98b63" roughness={0.4} metalness={0.22} />
+        <bevelBoxGeometry args={[0.065, 0.2, 5.55]} />
+        <Surface kind="brass" color="#a98b63" roughness={0.4} metalness={0.22} />
       </mesh>
       {[-3.9, 4.15].map((x, index) => (
         <mesh key={x} position={[x, 0.14, -4.32]}>
-          <boxGeometry args={[index ? 3.82 : 4.42, 0.2, 0.065]} />
-          <meshStandardMaterial color="#a98b63" roughness={0.4} metalness={0.22} />
+          <bevelBoxGeometry args={[index ? 3.82 : 4.42, 0.2, 0.065]} />
+          <Surface kind="brass" color="#a98b63" roughness={0.4} metalness={0.22} />
         </mesh>
       ))}
       <mesh position={[-6.005, 3.12, 0]}>
-        <boxGeometry args={[0.08, 0.12, 8.95]} />
-        <meshStandardMaterial color="#c5b69d" roughness={0.82} />
+        <bevelBoxGeometry args={[0.08, 0.12, 8.95]} />
+        <Surface kind="plaster" color="#c5b69d" roughness={0.82} />
       </mesh>
       <mesh position={[6.02, 1.2, -1.7]}>
-        <boxGeometry args={[0.08, 0.12, 5.55]} />
-        <meshStandardMaterial color="#c5b69d" roughness={0.82} />
+        <bevelBoxGeometry args={[0.08, 0.12, 5.55]} />
+        <Surface kind="plaster" color="#c5b69d" roughness={0.82} />
       </mesh>
     </group>
   );
 }
 
 function BathroomCutaway() {
-  const wallMat = <meshStandardMaterial map={STONE_TEXTURE} color="#e2d9c9" roughness={0.88} />;
-  const brassMat = <meshStandardMaterial color="#9d805c" roughness={0.32} metalness={0.62} />;
+  const wallMat = <Surface kind="plaster" color="#a89a80" roughness={0.88} />;
+  const brassMat = <Surface kind="brass" color="#9d805c" roughness={0.32} metalness={0.62} />;
   return (
     <group>
       <mesh position={[4.05, 0.015, -2.78]} receiveShadow>
-        <boxGeometry args={[4.05, 0.055, 3.22]} />
-        <meshStandardMaterial map={STONE_TEXTURE} color="#c9bda8" roughness={0.27} metalness={0.04} />
+        <bevelBoxGeometry args={[4.05, 0.055, 3.22]} />
+        <Surface kind="marble" color="#96866b" roughness={0.27} metalness={0.04} />
       </mesh>
       <mesh position={[5.02, 0.018, -0.18]} receiveShadow>
-        <boxGeometry args={[2.08, 0.06, 1.92]} />
-        <meshStandardMaterial map={STONE_TEXTURE} color="#b7ad9c" roughness={0.29} />
+        <bevelBoxGeometry args={[2.08, 0.06, 1.92]} />
+        <Surface kind="marble" color="#887b64" roughness={0.29} />
       </mesh>
       <mesh position={[6.02, 0.82, -2.8]} castShadow receiveShadow>
-        <boxGeometry args={[0.16, 1.64, 3.3]} />
+        <bevelBoxGeometry args={[0.16, 1.64, 3.3]} />
         {wallMat}
       </mesh>
       <mesh position={[4.05, 0.78, -4.38]} castShadow receiveShadow>
-        <boxGeometry args={[4.05, 1.56, 0.16]} />
+        <bevelBoxGeometry args={[4.05, 1.56, 0.16]} />
         {wallMat}
       </mesh>
       {[
@@ -358,7 +305,7 @@ function BathroomCutaway() {
         { x: 2.08, z: -1.72, depth: 1.42 },
       ].map(({ x, z, depth }) => (
         <mesh key={z} position={[x, 0.78, z]} castShadow receiveShadow>
-          <boxGeometry args={[0.16, 1.56, depth]} />
+          <bevelBoxGeometry args={[0.16, 1.56, depth]} />
           {wallMat}
         </mesh>
       ))}
@@ -367,53 +314,53 @@ function BathroomCutaway() {
         { x: 5.38, width: 1.26 },
       ].map(({ x, width }) => (
         <mesh key={x} position={[x, 0.5, -1.2]} castShadow receiveShadow>
-          <boxGeometry args={[width, 1, 0.16]} />
+          <bevelBoxGeometry args={[width, 1, 0.16]} />
           {wallMat}
         </mesh>
       ))}
       <mesh position={[4.06, 1.03, -1.2]} castShadow>
-        <boxGeometry args={[1.3, 0.08, 0.16]} />
+        <bevelBoxGeometry args={[1.3, 0.08, 0.16]} />
         {wallMat}
       </mesh>
       <mesh position={[4.08, 0.78, -0.18]} castShadow receiveShadow>
-        <boxGeometry args={[0.14, 1.56, 0.38]} />
+        <bevelBoxGeometry args={[0.14, 1.56, 0.38]} />
         {wallMat}
       </mesh>
       <mesh position={[4.08, 0.78, 0.53]} castShadow receiveShadow>
-        <boxGeometry args={[0.14, 1.56, 0.42]} />
+        <bevelBoxGeometry args={[0.14, 1.56, 0.42]} />
         {wallMat}
       </mesh>
       <mesh position={[4.13, 0.68, -0.37]} rotation={[0, -0.82, 0]} castShadow>
-        <boxGeometry args={[0.055, 1.36, 0.72]} />
-        <meshStandardMaterial map={WALNUT_TEXTURE} color="#b49b77" roughness={0.48} />
+        <bevelBoxGeometry args={[0.055, 1.36, 0.72]} />
+        <Surface kind="walnut" color="#513219" roughness={0.48} />
       </mesh>
       <mesh position={[4.47, 0.72, -0.1]}>
         <sphereGeometry args={[0.035, 12, 10]} />
         {brassMat}
       </mesh>
       <mesh position={[5.02, 0.78, 0.74]} castShadow receiveShadow>
-        <boxGeometry args={[2.08, 1.56, 0.14]} />
+        <bevelBoxGeometry args={[2.08, 1.56, 0.14]} />
         {wallMat}
       </mesh>
       <mesh position={[4.93, 1.53, -0.18]}>
-        <boxGeometry args={[0.9, 0.08, 0.14]} />
+        <bevelBoxGeometry args={[0.9, 0.08, 0.14]} />
         {wallMat}
       </mesh>
       <mesh position={[5.04, 0.82, -2.95]} castShadow receiveShadow>
-        <boxGeometry args={[1.7, 0.16, 1.18]} />
-        <meshStandardMaterial color="#958878" roughness={0.72} />
+        <bevelBoxGeometry args={[1.7, 0.16, 1.18]} />
+        <Surface kind="satin" color="#958878" roughness={0.72} />
       </mesh>
       <mesh position={[5.04, 0.92, -2.95]} receiveShadow>
-        <boxGeometry args={[1.62, 0.045, 1.1]} />
-        <meshStandardMaterial map={STONE_TEXTURE} color="#f2eadc" roughness={0.24} />
+        <bevelBoxGeometry args={[1.62, 0.045, 1.1]} />
+        <Surface kind="marble" color="#b4a68d" roughness={0.24} />
       </mesh>
       <mesh position={[5.04, 0.96, -2.95]}>
         <cylinderGeometry args={[0.18, 0.24, 0.13, 36]} />
-        <meshPhysicalMaterial color="#eee9e0" roughness={0.18} />
+        <Surface kind="ceramic" physical color="#eee9e0" roughness={0.18} />
       </mesh>
       <mesh position={[5.04, 1.03, -2.95]}>
         <cylinderGeometry args={[0.14, 0.14, 0.018, 36]} />
-        <meshStandardMaterial color="#aca392" roughness={0.24} metalness={0.12} />
+        <Surface kind="satin" color="#aca392" roughness={0.24} metalness={0.12} />
       </mesh>
       <mesh position={[5.42, 1.11, -2.95]}>
         <cylinderGeometry args={[0.022, 0.022, 0.18, 10]} />
@@ -424,24 +371,24 @@ function BathroomCutaway() {
         {brassMat}
       </mesh>
       <mesh position={[5.02, 1.73, -2.56]}>
-        <boxGeometry args={[0.78, 0.88, 0.045]} />
+        <bevelBoxGeometry args={[0.78, 0.88, 0.045]} />
         <meshPhysicalMaterial color="#8d918d" roughness={0.09} metalness={0.72} />
       </mesh>
       <mesh position={[5.04, 1.28, -3.82]}>
-        <boxGeometry args={[1.32, 0.035, 0.56]} />
-        <meshStandardMaterial map={WALNUT_TEXTURE} color="#d6c3a2" roughness={0.48} />
+        <bevelBoxGeometry args={[1.32, 0.035, 0.56]} />
+        <Surface kind="walnut" color="#613f22" roughness={0.48} />
       </mesh>
       <mesh position={[5.04, 1.15, -3.88]}>
-        <boxGeometry args={[1.2, 0.22, 0.38]} />
-        <meshStandardMaterial map={WALNUT_TEXTURE} color="#b99b73" roughness={0.52} />
+        <bevelBoxGeometry args={[1.2, 0.22, 0.38]} />
+        <Surface kind="walnut" color="#533218" roughness={0.52} />
       </mesh>
       <mesh position={[3.1, 0.23, -3.55]}>
-        <boxGeometry args={[1.35, 0.34, 0.92]} />
-        <meshPhysicalMaterial color="#dedbd2" roughness={0.22} />
+        <bevelBoxGeometry args={[1.35, 0.34, 0.92]} />
+        <Surface kind="ceramic" physical color="#dedbd2" roughness={0.22} />
       </mesh>
       <mesh position={[3.1, 0.43, -3.55]}>
-        <boxGeometry args={[1.4, 0.06, 0.96]} />
-        <meshPhysicalMaterial color="#f1ece2" roughness={0.18} />
+        <bevelBoxGeometry args={[1.4, 0.06, 0.96]} />
+        <Surface kind="ceramic" physical color="#f1ece2" roughness={0.18} />
       </mesh>
       {[-0.52, 0.52].map((x) => (
         <mesh key={x} position={[3.1 + x, 0.52, -3.55]}>
@@ -452,23 +399,23 @@ function BathroomCutaway() {
       <group position={[5.02, 0, -0.43]}>
         <mesh position={[0, 0.22, 0.02]} castShadow>
           <cylinderGeometry args={[0.19, 0.25, 0.42, 28]} />
-          <meshPhysicalMaterial color="#f0ece4" roughness={0.2} />
+          <Surface kind="ceramic" physical color="#f0ece4" roughness={0.2} />
         </mesh>
         <mesh position={[0, 0.48, -0.08]} castShadow scale={[1, 0.62, 1.35]}>
           <sphereGeometry args={[0.32, 32, 24]} />
-          <meshPhysicalMaterial color="#f2eee7" roughness={0.16} />
+          <Surface kind="ceramic" physical color="#f2eee7" roughness={0.16} />
         </mesh>
         <mesh position={[0, 0.69, -0.47]} castShadow>
-          <boxGeometry args={[0.58, 0.72, 0.16]} />
-          <meshPhysicalMaterial color="#f2eee7" roughness={0.2} />
+          <bevelBoxGeometry args={[0.58, 0.72, 0.16]} />
+          <Surface kind="ceramic" physical color="#f2eee7" roughness={0.2} />
         </mesh>
         <mesh position={[0, 0.86, -0.365]}>
-          <boxGeometry args={[0.42, 0.035, 0.018]} />
+          <bevelBoxGeometry args={[0.42, 0.035, 0.018]} />
           {brassMat}
         </mesh>
         <mesh position={[0, 0.58, -0.08]} rotation={[Math.PI / 2, 0, 0]}>
           <torusGeometry args={[0.235, 0.025, 12, 36]} />
-          <meshPhysicalMaterial color="#e5e0d7" roughness={0.22} />
+          <Surface kind="ceramic" physical color="#e5e0d7" roughness={0.22} />
         </mesh>
         <mesh position={[0.24, 0.55, -0.08]}>
           <cylinderGeometry args={[0.018, 0.018, 0.09, 8]} />
@@ -487,20 +434,20 @@ function BathroomCutaway() {
         />
       </mesh>
       <mesh position={[3.5, 0.9, -2.95]}>
-        <boxGeometry args={[0.03, 1.76, 0.035]} />
+        <bevelBoxGeometry args={[0.03, 1.76, 0.035]} />
         {brassMat}
       </mesh>
       <mesh position={[5.04, 0.9, -3.62]}>
-        <boxGeometry args={[1.8, 1.72, 0.035]} />
+        <bevelBoxGeometry args={[1.8, 1.72, 0.035]} />
         <meshPhysicalMaterial color="#bdd0cc" roughness={0.13} metalness={0.07} transparent opacity={0.18} side={THREE.DoubleSide} />
       </mesh>
       <mesh position={[5.04, 1.78, -3.62]}>
-        <boxGeometry args={[1.86, 0.035, 0.04]} />
+        <bevelBoxGeometry args={[1.86, 0.035, 0.04]} />
         {brassMat}
       </mesh>
       <mesh position={[4.1, 0.01, -0.18]} receiveShadow>
-        <boxGeometry args={[0.06, 0.02, 0.44]} />
-        <meshStandardMaterial color="#988367" roughness={0.48} metalness={0.18} />
+        <bevelBoxGeometry args={[0.06, 0.02, 0.44]} />
+        <Surface kind="walnut" color="#988367" roughness={0.48} metalness={0.18} />
       </mesh>
       <pointLight position={[4.6, 2.5, -2.8]} intensity={3.8} distance={4.5} color="#f4d9ae" />
     </group>
@@ -511,15 +458,15 @@ function BedroomPartition() {
   return (
     <group>
       <mesh position={[-3.9, 2.45, -4.335]} receiveShadow>
-        <boxGeometry args={[4.08, 1.62, 0.065]} />
-        <meshStandardMaterial color="#24434a" roughness={0.82} />
+        <bevelBoxGeometry args={[4.08, 1.62, 0.065]} />
+        <Surface kind="satin" color="#24434a" roughness={0.82} />
       </mesh>
       {Array.from({ length: 19 }, (_, index) => {
         const x = -5.82 + index * 0.214;
         return (
           <mesh key={index} position={[x, 2.45, -4.292]} castShadow>
-            <boxGeometry args={[0.018, 1.56, 0.018]} />
-            <meshStandardMaterial
+            <bevelBoxGeometry args={[0.018, 1.56, 0.018]} />
+            <Surface kind="satin"
               color={index % 3 === 0 ? "#36565a" : "#2b484d"}
               roughness={0.58}
               metalness={0.08}
@@ -528,38 +475,38 @@ function BedroomPartition() {
         );
       })}
       <mesh position={[-3.9, 1.63, -4.29]}>
-        <boxGeometry args={[4.08, 0.025, 0.035]} />
-        <meshStandardMaterial color="#efc07b" roughness={0.42} metalness={0.48} />
+        <bevelBoxGeometry args={[4.08, 0.025, 0.035]} />
+        <Surface kind="brass" color="#efc07b" roughness={0.42} metalness={0.48} />
       </mesh>
       {[{ z: -3.2, length: 2.4 }, { z: -0.6, length: 1 }].map(({ z, length }) => (
         <mesh key={z} position={[-1.05, 0.82, z]} castShadow receiveShadow>
-          <boxGeometry args={[0.16, 1.64, length]} />
-          <meshStandardMaterial map={STONE_TEXTURE} color="#c8bdac" roughness={0.92} />
+          <bevelBoxGeometry args={[0.16, 1.64, length]} />
+          <Surface kind="plaster" color="#95866e" roughness={0.92} />
         </mesh>
       ))}
       <mesh position={[-1.05, 1.62, -1.95]}>
-        <boxGeometry args={[0.14, 0.08, 0.42]} />
-        <meshStandardMaterial color="#a68960" roughness={0.35} metalness={0.45} />
+        <bevelBoxGeometry args={[0.14, 0.08, 0.42]} />
+        <Surface kind="brass" color="#a68960" roughness={0.35} metalness={0.45} />
       </mesh>
       <mesh position={[-3.6, 0.48, 0.28]} castShadow receiveShadow>
-        <boxGeometry args={[5, 0.96, 0.16]} />
-        <meshStandardMaterial map={STONE_TEXTURE} color="#c8bdac" roughness={0.92} />
+        <bevelBoxGeometry args={[5, 0.96, 0.16]} />
+        <Surface kind="plaster" color="#95866e" roughness={0.92} />
       </mesh>
       <mesh position={[-3.6, 0.98, 0.22]}>
-        <boxGeometry args={[5.02, 0.08, 0.16]} />
-        <meshStandardMaterial color="#9e845e" roughness={0.38} metalness={0.42} />
+        <bevelBoxGeometry args={[5.02, 0.08, 0.16]} />
+        <Surface kind="brass" color="#9e845e" roughness={0.38} metalness={0.42} />
       </mesh>
       <mesh position={[-1.12, 0.12, -1.98]} rotation={[0, -0.95, 0]} castShadow>
-        <boxGeometry args={[0.055, 1.48, 0.9]} />
-        <meshStandardMaterial map={WALNUT_TEXTURE} color="#b49b77" roughness={0.48} />
+        <bevelBoxGeometry args={[0.055, 1.48, 0.9]} />
+        <Surface kind="walnut" color="#513219" roughness={0.48} />
       </mesh>
       <mesh position={[-1.08, 0.17, -2.38]} rotation={[0, -0.95, 0]}>
-        <boxGeometry args={[0.045, 0.08, 0.08]} />
-        <meshStandardMaterial color="#a9804e" roughness={0.28} metalness={0.72} />
+        <bevelBoxGeometry args={[0.045, 0.08, 0.08]} />
+        <Surface kind="brass" color="#a9804e" roughness={0.28} metalness={0.72} />
       </mesh>
       <mesh position={[-5.96, 0.08, -1.78]} receiveShadow>
-        <boxGeometry args={[0.08, 0.16, 4.65]} />
-        <meshStandardMaterial color="#9c886c" roughness={0.5} />
+        <bevelBoxGeometry args={[0.08, 0.16, 4.65]} />
+        <Surface kind="walnut" color="#9c886c" roughness={0.5} />
       </mesh>
     </group>
   );
@@ -569,48 +516,48 @@ function ApartmentEntry() {
   return (
     <group position={[-4.9, 0, 0]}>
       <mesh position={[-0.08, 0.82, 4.31]} castShadow>
-        <boxGeometry args={[0.08, 1.64, 0.13]} />
-        <meshStandardMaterial map={WALNUT_TEXTURE} color="#7d6242" roughness={0.45} />
+        <bevelBoxGeometry args={[0.08, 1.64, 0.13]} />
+        <Surface kind="walnut" color="#38200e" roughness={0.45} />
       </mesh>
       <mesh position={[1.08, 0.82, 4.31]} castShadow>
-        <boxGeometry args={[0.08, 1.64, 0.13]} />
-        <meshStandardMaterial map={WALNUT_TEXTURE} color="#7d6242" roughness={0.45} />
+        <bevelBoxGeometry args={[0.08, 1.64, 0.13]} />
+        <Surface kind="walnut" color="#38200e" roughness={0.45} />
       </mesh>
       <mesh position={[0.5, 1.64, 4.31]}>
-        <boxGeometry args={[1.24, 0.08, 0.13]} />
-        <meshStandardMaterial color="#b6925e" roughness={0.36} metalness={0.5} />
+        <bevelBoxGeometry args={[1.24, 0.08, 0.13]} />
+        <Surface kind="brass" color="#b6925e" roughness={0.36} metalness={0.5} />
       </mesh>
       <mesh position={[0.5, 0.06, 4.28]} receiveShadow>
-        <boxGeometry args={[2.15, 0.12, 0.48]} />
-        <meshStandardMaterial map={STONE_TEXTURE} color="#c2b49a" roughness={0.44} />
+        <bevelBoxGeometry args={[2.15, 0.12, 0.48]} />
+        <Surface kind="marble" color="#918062" roughness={0.44} />
       </mesh>
       <mesh position={[0.5, 0.74, 4.38]} rotation={[0, -0.24, 0]} castShadow>
-        <boxGeometry args={[1.02, 1.45, 0.075]} />
-        <meshStandardMaterial map={WALNUT_TEXTURE} color="#c9b18f" roughness={0.5} />
+        <bevelBoxGeometry args={[1.02, 1.45, 0.075]} />
+        <Surface kind="walnut" color="#5b391e" roughness={0.5} />
       </mesh>
       <mesh position={[0.84, 0.75, 4.31]} rotation={[0, -0.24, 0]}>
-        <boxGeometry args={[0.018, 1.18, 0.018]} />
-        <meshStandardMaterial color="#b08b58" roughness={0.34} metalness={0.5} />
+        <bevelBoxGeometry args={[0.018, 1.18, 0.018]} />
+        <Surface kind="brass" color="#b08b58" roughness={0.34} metalness={0.5} />
       </mesh>
       <mesh position={[0.16, 0.76, 4.43]}>
         <sphereGeometry args={[0.035, 12, 10]} />
-        <meshStandardMaterial color="#b18c57" roughness={0.28} metalness={0.72} />
+        <Surface kind="brass" color="#b18c57" roughness={0.28} metalness={0.72} />
       </mesh>
       <mesh position={[1.15, 1.32, 4.25]}>
-        <boxGeometry args={[0.28, 0.22, 0.045]} />
-        <meshStandardMaterial color="#b6925e" roughness={0.32} metalness={0.6} />
+        <bevelBoxGeometry args={[0.28, 0.22, 0.045]} />
+        <Surface kind="brass" color="#b6925e" roughness={0.32} metalness={0.6} />
       </mesh>
       <mesh position={[1.15, 1.32, 4.22]}>
-        <boxGeometry args={[0.2, 0.14, 0.018]} />
-        <meshStandardMaterial color="#30332d" roughness={0.58} />
+        <bevelBoxGeometry args={[0.2, 0.14, 0.018]} />
+        <Surface kind="satin" color="#30332d" roughness={0.58} />
       </mesh>
       <mesh position={[-0.55, 0.14, 3.35]} receiveShadow>
-        <boxGeometry args={[1.4, 0.025, 2.35]} />
-        <meshStandardMaterial color="#b9a789" roughness={0.96} />
+        <bevelBoxGeometry args={[1.4, 0.025, 2.35]} />
+        <Surface kind="rug" color="#b9a789" roughness={0.96} />
       </mesh>
       <mesh position={[-0.55, 0.16, 3.35]} receiveShadow>
-        <boxGeometry args={[1.24, 0.02, 2.18]} />
-        <meshStandardMaterial map={LINEN_TEXTURE} color="#d4c7b2" roughness={0.98} />
+        <bevelBoxGeometry args={[1.24, 0.02, 2.18]} />
+        <Surface kind="linen" color="#b5a489" roughness={0.98} />
       </mesh>
     </group>
   );
@@ -620,19 +567,19 @@ function LivingRoomTelevision() {
   return (
     <group position={[1.8, 0, -0.1]}>
       <mesh position={[0, 1.88, 4.34]} castShadow>
-        <boxGeometry args={[2.64, 1.68, 0.075]} />
-        <meshStandardMaterial map={WALNUT_TEXTURE} color="#4b3829" roughness={0.58} />
+        <bevelBoxGeometry args={[2.64, 1.68, 0.075]} />
+        <Surface kind="walnut" color="#221209" roughness={0.58} />
       </mesh>
       <mesh position={[0, 1.88, 4.285]}>
-        <boxGeometry args={[2.5, 1.54, 0.025]} />
-        <meshStandardMaterial color="#c99d54" roughness={0.4} metalness={0.38} />
+        <bevelBoxGeometry args={[2.5, 1.54, 0.025]} />
+        <Surface kind="brass" color="#c99d54" roughness={0.4} metalness={0.38} />
       </mesh>
       <mesh position={[0, 1.88, 4.263]}>
-        <boxGeometry args={[2.44, 1.48, 0.025]} />
-        <meshStandardMaterial color="#101820" roughness={0.2} metalness={0.24} />
+        <bevelBoxGeometry args={[2.44, 1.48, 0.025]} />
+        <Surface kind="satin" color="#101820" roughness={0.2} metalness={0.24} />
       </mesh>
       <mesh position={[0, 1.88, 4.245]}>
-        <boxGeometry args={[2.34, 1.38, 0.012]} />
+        <bevelBoxGeometry args={[2.34, 1.38, 0.012]} />
         <meshPhysicalMaterial
           color="#13212a"
           emissive="#07131c"
@@ -648,17 +595,17 @@ function LivingRoomTelevision() {
         <meshStandardMaterial color="#d5b987" emissive="#d5b987" emissiveIntensity={0.3} />
       </mesh>
       <mesh position={[0, 0.72, 4.02]} castShadow receiveShadow>
-        <boxGeometry args={[2.3, 0.22, 0.34]} />
-        <meshStandardMaterial map={WALNUT_TEXTURE} color="#5a4030" roughness={0.54} />
+        <bevelBoxGeometry args={[2.3, 0.22, 0.34]} />
+        <Surface kind="walnut" color="#29150a" roughness={0.54} />
       </mesh>
       <mesh position={[0, 0.835, 4.005]}>
-        <boxGeometry args={[2.2, 0.018, 0.3]} />
-        <meshStandardMaterial color="#c99d54" roughness={0.4} metalness={0.42} />
+        <bevelBoxGeometry args={[2.2, 0.018, 0.3]} />
+        <Surface kind="brass" color="#c99d54" roughness={0.4} metalness={0.42} />
       </mesh>
       {[-1.02, 1.02].map((x) => (
         <mesh key={x} position={[x * 0.9, 0.57, 4.04]} castShadow>
-          <boxGeometry args={[0.045, 0.24, 0.22]} />
-          <meshStandardMaterial color="#9d805c" roughness={0.4} metalness={0.42} />
+          <bevelBoxGeometry args={[0.045, 0.24, 0.22]} />
+          <Surface kind="brass" color="#9d805c" roughness={0.4} metalness={0.42} />
         </mesh>
       ))}
     </group>
@@ -670,15 +617,15 @@ function Plant({ position }: { position: [number, number, number] }) {
     <group position={position}>
       <mesh position={[0, 0.3, 0]} castShadow>
         <cylinderGeometry args={[0.29, 0.2, 0.6, 32, 1, true]} />
-        <meshStandardMaterial color="#9b7955" roughness={0.42} metalness={0.08} side={THREE.DoubleSide} />
+        <Surface kind="ceramic" color="#9b7955" roughness={0.42} metalness={0.08} side={THREE.DoubleSide} />
       </mesh>
       <mesh position={[0, 0.62, 0]}>
         <cylinderGeometry args={[0.3, 0.3, 0.055, 32]} />
-        <meshStandardMaterial color="#40382d" roughness={1} />
+        <Surface kind="fabric" color="#40382d" roughness={1} />
       </mesh>
       <mesh position={[0, 0.61, 0]}>
         <torusGeometry args={[0.29, 0.025, 8, 32]} />
-        <meshStandardMaterial color="#c0a376" roughness={0.34} metalness={0.55} />
+        <Surface kind="brass" color="#c0a376" roughness={0.34} metalness={0.55} />
       </mesh>
       {Array.from({ length: 6 }, (_, i) => {
         const angle = (i / 6) * Math.PI * 2;
@@ -687,7 +634,7 @@ function Plant({ position }: { position: [number, number, number] }) {
           <group key={i} position={[Math.cos(angle) * 0.12, 0.62, Math.sin(angle) * 0.12]}>
             <mesh position={[Math.cos(angle) * 0.16, height * 0.45, Math.sin(angle) * 0.16]} rotation={[0.12, 0, -Math.cos(angle) * 0.14]} castShadow>
               <cylinderGeometry args={[0.018, 0.025, height, 8]} />
-              <meshStandardMaterial color="#526247" roughness={0.88} />
+              <Surface kind="foliage" color="#526247" roughness={0.88} />
             </mesh>
             {[0.32, 0.55, 0.77].map((fraction, leafIndex) => (
               <mesh
@@ -702,7 +649,7 @@ function Plant({ position }: { position: [number, number, number] }) {
                 castShadow
               >
                 <sphereGeometry args={[1, 14, 12]} />
-                <meshStandardMaterial color={leafIndex % 2 ? "#596c4c" : "#74815b"} roughness={0.86} />
+                <Surface kind="foliage" color={leafIndex % 2 ? "#596c4c" : "#74815b"} roughness={0.86} />
               </mesh>
             ))}
           </group>
@@ -710,7 +657,7 @@ function Plant({ position }: { position: [number, number, number] }) {
       })}
       <mesh position={[0, 0.61, 0]}>
         <cylinderGeometry args={[0.24, 0.2, 0.08, 20]} />
-        <meshStandardMaterial color="#2e3228" roughness={1} />
+        <Surface kind="foliage" color="#2e3228" roughness={1} />
       </mesh>
     </group>
   );
@@ -738,11 +685,11 @@ function FloralArrangement({ position, scale = 1 }: { position: [number, number,
           new THREE.Vector2(0.18, 0.42),
           new THREE.Vector2(0.2, 0.46),
         ], 32]} />
-        <meshPhysicalMaterial color="#e7e0d3" roughness={0.24} metalness={0.04} clearcoat={0.32} />
+        <Surface kind="ceramic" physical color="#e7e0d3" roughness={0.24} metalness={0.04} clearcoat={0.32} />
       </mesh>
       <mesh position={[0, 0.425, 0]}>
         <torusGeometry args={[0.19, 0.018, 8, 28]} />
-        <meshStandardMaterial color="#b6925e" roughness={0.32} metalness={0.62} />
+        <Surface kind="brass" color="#b6925e" roughness={0.32} metalness={0.62} />
       </mesh>
       {stems.map(([x, z, height], index) => {
         const angle = Math.atan2(x, z);
@@ -756,7 +703,7 @@ function FloralArrangement({ position, scale = 1 }: { position: [number, number,
               castShadow
             >
               <cylinderGeometry args={[0.009, 0.016, height, 8]} />
-              <meshStandardMaterial color="#536449" roughness={0.9} />
+              <Surface kind="foliage" color="#536449" roughness={0.9} />
             </mesh>
             {[0.35, 0.58, 0.76].map((fraction, leafIndex) => (
               <mesh
@@ -771,7 +718,7 @@ function FloralArrangement({ position, scale = 1 }: { position: [number, number,
                 castShadow
               >
                 <sphereGeometry args={[1, 12, 10]} />
-                <meshStandardMaterial color={leafIndex % 2 ? "#627451" : "#7d8964"} roughness={0.86} />
+                <Surface kind="foliage" color={leafIndex % 2 ? "#627451" : "#7d8964"} roughness={0.86} />
               </mesh>
             ))}
             <group position={tip}>
@@ -786,13 +733,13 @@ function FloralArrangement({ position, scale = 1 }: { position: [number, number,
                     castShadow
                   >
                     <sphereGeometry args={[1, 12, 10]} />
-                    <meshPhysicalMaterial color={flowerColor} roughness={0.58} clearcoat={0.12} />
+                    <Surface kind="foliage" physical color={flowerColor} roughness={0.58} clearcoat={0.12} />
                   </mesh>
                 );
               })}
               <mesh position={[0, 0.025, 0]} castShadow>
                 <sphereGeometry args={[0.045, 14, 12]} />
-                <meshStandardMaterial color="#c99d54" roughness={0.58} />
+                <Surface kind="walnut" color="#c99d54" roughness={0.58} />
               </mesh>
             </group>
           </group>
@@ -806,63 +753,63 @@ function Sofa({ position, rotation = 0 }: { position: [number, number, number]; 
   return (
     <group position={position} rotation={[0, rotation, 0]}>
       <RoundedBox position={[0, 0.48, 0]} args={[2.8, 0.5, 0.95]} radius={0.09} smoothness={4} castShadow>
-        <meshStandardMaterial map={LINEN_TEXTURE} color="#0f4863" roughness={0.82} />
+        <Surface kind="linen" color="#0d3b4c" roughness={0.82} />
       </RoundedBox>
       <RoundedBox position={[0, 0.91, -0.37]} args={[2.8, 0.85, 0.22]} radius={0.09} smoothness={4} castShadow>
-        <meshStandardMaterial map={LINEN_TEXTURE} color="#123e58" roughness={0.84} />
+        <Surface kind="linen" color="#0f3344" roughness={0.84} />
       </RoundedBox>
       {[-1.34, 1.34].map((x) => (
         <RoundedBox key={x} position={[x, 0.69, 0.02]} args={[0.24, 0.75, 0.94]} radius={0.06} smoothness={4} castShadow>
-          <meshStandardMaterial map={LINEN_TEXTURE} color="#0f4863" roughness={0.82} />
+          <Surface kind="linen" color="#0d3b4c" roughness={0.82} />
         </RoundedBox>
       ))}
       <RoundedBox position={[0, 0.71, 0.16]} args={[2.48, 0.34, 0.66]} radius={0.1} smoothness={4} castShadow receiveShadow>
-        <meshStandardMaterial map={LINEN_TEXTURE} color="#eee8dc" roughness={0.98} />
+        <Surface kind="linen" color="#cbbfa9" roughness={0.98} />
       </RoundedBox>
       {[-0.88, 0, 0.88].map((x) => (
         <RoundedBox key={x} position={[x, 0.84, -0.18]} args={[0.76, 0.5, 0.16]} radius={0.08} smoothness={4} castShadow>
-          <meshStandardMaterial map={LINEN_TEXTURE} color="#f4efe5" roughness={0.98} />
+          <Surface kind="linen" color="#d1c5b0" roughness={0.98} />
         </RoundedBox>
       ))}
       {[-0.66, 0.66].map((x, index) => (
         <group key={x} position={[x, 0.77, 0.16]} rotation={[0.08, index ? -0.12 : 0.12, index ? -0.12 : 0.12]}>
           <RoundedBox args={[0.62, 0.43, 0.18]} radius={0.08} smoothness={4} castShadow>
-            <meshStandardMaterial map={LINEN_TEXTURE} color="#f4efe5" roughness={0.97} />
+            <Surface kind="linen" color="#d1c5b0" roughness={0.97} />
           </RoundedBox>
         </group>
       ))}
       {[-1, 1].map((side) => (
         <group key={side} position={[side * 1.465, 0.69, 0.03]} rotation={[0, side * Math.PI / 2, 0]}>
           <RoundedBox args={[0.68, 0.62, 0.035]} radius={0.06} smoothness={4}>
-            <meshStandardMaterial map={LINEN_TEXTURE} color="#0f4863" roughness={0.84} />
+            <Surface kind="linen" color="#0d3b4c" roughness={0.84} />
           </RoundedBox>
           {[0.43, -0.43].map((y) => (
             <mesh key={y} position={[0, y, 0.022]}>
-              <boxGeometry args={[0.74, 0.014, 0.012]} />
-              <meshStandardMaterial color="#c99d54" roughness={0.42} metalness={0.48} />
+              <bevelBoxGeometry args={[0.74, 0.014, 0.012]} />
+              <Surface kind="brass" color="#c99d54" roughness={0.42} metalness={0.48} />
             </mesh>
           ))}
           {[-0.19, 0.19].map((x) => (
             <mesh key={x} position={[x, 0.06, 0.025]}>
-              <boxGeometry args={[0.012, 0.25, 0.012]} />
-              <meshStandardMaterial color="#174f69" roughness={0.78} />
+              <bevelBoxGeometry args={[0.012, 0.25, 0.012]} />
+              <Surface kind="satin" color="#174f69" roughness={0.78} />
             </mesh>
           ))}
           <mesh position={[0, 0.37, 0.025]}>
-            <boxGeometry args={[0.64, 0.035, 0.022]} />
-            <meshStandardMaterial color="#eee8dc" roughness={0.92} />
+            <bevelBoxGeometry args={[0.64, 0.035, 0.022]} />
+            <Surface kind="fabric" color="#eee8dc" roughness={0.92} />
           </mesh>
         </group>
       ))}
       <mesh position={[0, 0.205, 0.485]}>
-        <boxGeometry args={[2.52, 0.035, 0.035]} />
-        <meshStandardMaterial color="#c99d54" roughness={0.4} metalness={0.5} />
+        <bevelBoxGeometry args={[2.52, 0.035, 0.035]} />
+        <Surface kind="brass" color="#c99d54" roughness={0.4} metalness={0.5} />
       </mesh>
       {[-1.1, 1.1].flatMap((x) =>
         [-0.29, 0.29].map((z) => (
           <mesh key={`${x}-${z}`} position={[x, 0.19, z]}>
             <cylinderGeometry args={[0.04, 0.04, 0.36, 8]} />
-            <meshStandardMaterial color="#b18b4e" roughness={0.38} metalness={0.62} />
+            <Surface kind="brass" color="#b18b4e" roughness={0.38} metalness={0.62} />
           </mesh>
         )),
       )}
@@ -874,76 +821,76 @@ function Bed({ position, width = 2.7 }: { position: [number, number, number]; wi
   return (
     <group position={position}>
       <RoundedBox position={[0, 0.34, -0.48]} args={[width + 0.2, 0.72, 0.15]} radius={0.055} smoothness={4} castShadow>
-        <meshStandardMaterial map={WALNUT_TEXTURE} color="#3a2a23" roughness={0.56} />
+        <Surface kind="walnut" color="#1a0e07" roughness={0.56} />
       </RoundedBox>
       <RoundedBox position={[0, 0.51, -0.382]} args={[width - 0.16, 0.38, 0.045]} radius={0.07} smoothness={4} castShadow>
-        <meshStandardMaterial map={LINEN_TEXTURE} color="#1a1a2e" roughness={0.92} />
+        <Surface kind="linen" color="#161523" roughness={0.92} />
       </RoundedBox>
       {Array.from({ length: 7 }, (_, index) => {
         const x = (index - 3) * ((width - 0.38) / 6);
         return (
           <mesh key={index} position={[x, 0.51, -0.355]}>
-            <boxGeometry args={[0.012, 0.31, 0.009]} />
-            <meshStandardMaterial color="#33334a" roughness={0.82} />
+            <bevelBoxGeometry args={[0.012, 0.31, 0.009]} />
+            <Surface kind="fabric" color="#33334a" roughness={0.82} />
           </mesh>
         );
       })}
       <mesh position={[0, 0.294, -0.355]}>
-        <boxGeometry args={[width - 0.26, 0.018, 0.02]} />
-        <meshStandardMaterial color="#efc07b" roughness={0.42} metalness={0.38} />
+        <bevelBoxGeometry args={[width - 0.26, 0.018, 0.02]} />
+        <Surface kind="brass" color="#efc07b" roughness={0.42} metalness={0.38} />
       </mesh>
       <RoundedBox position={[0, 0.22, 0]} args={[width + 0.22, 0.42, 2.72]} radius={0.06} smoothness={4} castShadow receiveShadow>
-        <meshStandardMaterial map={WALNUT_TEXTURE} color="#5a4030" roughness={0.58} />
+        <Surface kind="walnut" color="#29150a" roughness={0.58} />
       </RoundedBox>
       <RoundedBox position={[0, 0.52, 0.08]} args={[width, 0.44, 2.38]} radius={0.15} smoothness={5} castShadow>
-        <meshStandardMaterial map={LINEN_TEXTURE} color="#fffaf0" roughness={0.98} />
+        <Surface kind="linen" color="#daceb8" roughness={0.98} />
       </RoundedBox>
       <mesh position={[0, 0.79, 0.55]} castShadow>
-        <boxGeometry args={[width - 0.12, 0.14, 1.35]} />
-        <meshStandardMaterial map={LINEN_TEXTURE} color="#0f3460" roughness={0.94} />
+        <bevelBoxGeometry args={[width - 0.12, 0.14, 1.35]} />
+        <Surface kind="linen" color="#0d2b4a" roughness={0.94} />
       </mesh>
       {[-0.38, 0, 0.38].map((z) => (
         <mesh key={z} position={[0, 0.866, z]}>
-          <boxGeometry args={[width - 0.36, 0.008, 0.012]} />
-          <meshStandardMaterial color="#29486b" roughness={0.92} />
+          <bevelBoxGeometry args={[width - 0.36, 0.008, 0.012]} />
+          <Surface kind="fabric" color="#29486b" roughness={0.92} />
         </mesh>
       ))}
       <RoundedBox position={[0, 0.88, 1.03]} args={[width - 0.16, 0.12, 0.62]} radius={0.045} smoothness={3} castShadow>
-        <meshStandardMaterial map={LINEN_TEXTURE} color="#16213e" roughness={0.94} />
+        <Surface kind="linen" color="#131b30" roughness={0.94} />
       </RoundedBox>
       {[0.72, 1.34].map((z) => (
         <mesh key={z} position={[0, 0.944, z]}>
-          <boxGeometry args={[width - 0.28, 0.008, 0.018]} />
-          <meshStandardMaterial color="#efc07b" roughness={0.5} metalness={0.3} />
+          <bevelBoxGeometry args={[width - 0.28, 0.008, 0.018]} />
+          <Surface kind="brass" color="#efc07b" roughness={0.5} metalness={0.3} />
         </mesh>
       ))}
       {[-width * 0.27, width * 0.27].map((x) => (
         <group key={x} position={[x, 0.77, -0.82]}>
           <RoundedBox args={[0.76, 0.22, 0.58]} radius={0.08} smoothness={4} castShadow>
-            <meshStandardMaterial map={LINEN_TEXTURE} color="#16213e" roughness={0.96} />
+            <Surface kind="linen" color="#131b30" roughness={0.96} />
           </RoundedBox>
           <mesh position={[0, -0.1, 0.3]} rotation={[-0.12, 0, 0]}>
-            <boxGeometry args={[0.77, 0.015, 0.025]} />
-            <meshStandardMaterial color="#efc07b" roughness={0.56} metalness={0.18} />
+            <bevelBoxGeometry args={[0.77, 0.015, 0.025]} />
+            <Surface kind="satin" color="#efc07b" roughness={0.56} metalness={0.18} />
           </mesh>
         </group>
       ))}
       <group position={[0, 0.77, -0.36]} rotation={[0.04, 0, 0]}>
         <RoundedBox args={[0.82, 0.25, 0.36]} radius={0.1} smoothness={5} castShadow>
-          <meshStandardMaterial map={LINEN_TEXTURE} color="#0f3460" roughness={0.93} />
+          <Surface kind="linen" color="#0d2b4a" roughness={0.93} />
         </RoundedBox>
         <mesh position={[0, -0.1, 0.19]}>
-          <boxGeometry args={[0.68, 0.012, 0.012]} />
-          <meshStandardMaterial color="#efc07b" roughness={0.52} metalness={0.2} />
+          <bevelBoxGeometry args={[0.68, 0.012, 0.012]} />
+          <Surface kind="satin" color="#efc07b" roughness={0.52} metalness={0.2} />
         </mesh>
       </group>
       <mesh position={[0, 0.81, 1.04]} castShadow>
-        <boxGeometry args={[width - 0.08, 0.12, 0.35]} />
-        <meshStandardMaterial map={LINEN_TEXTURE} color="#16213e" roughness={0.94} />
+        <bevelBoxGeometry args={[width - 0.08, 0.12, 0.35]} />
+        <Surface kind="linen" color="#131b30" roughness={0.94} />
       </mesh>
       <mesh position={[width * 0.22, 0.855, 1.04]}>
-        <boxGeometry args={[0.11, 0.015, 0.34]} />
-        <meshStandardMaterial color="#efc07b" roughness={0.5} metalness={0.24} />
+        <bevelBoxGeometry args={[0.11, 0.015, 0.34]} />
+        <Surface kind="satin" color="#efc07b" roughness={0.5} metalness={0.24} />
       </mesh>
     </group>
   );
@@ -953,27 +900,26 @@ function SideTable({ position }: { position: [number, number, number] }) {
   return (
     <group position={position}>
       <mesh position={[0, 0.55, 0]} castShadow>
-        <boxGeometry args={[0.74, 0.12, 0.68]} />
-        <meshStandardMaterial
-          map={WALNUT_TEXTURE}
-          color="#3b2b23"
+        <bevelBoxGeometry args={[0.74, 0.12, 0.68]} />
+        <Surface kind="walnut"
+          color="#1b0e07"
           roughness={0.48}
           metalness={0.03}
         />
       </mesh>
       <mesh position={[0, 0.38, 0.015]} castShadow>
-        <boxGeometry args={[0.49, 0.27, 0.46]} />
-        <meshStandardMaterial map={WALNUT_TEXTURE} color="#493326" roughness={0.54} />
+        <bevelBoxGeometry args={[0.49, 0.27, 0.46]} />
+        <Surface kind="walnut" color="#211008" roughness={0.54} />
       </mesh>
       {[-0.06, 0.1].map((y) => (
         <group key={y}>
           <mesh position={[0, 0.38 + y, 0.252]}>
-            <boxGeometry args={[0.45, 0.012, 0.012]} />
-            <meshStandardMaterial color="#684a34" roughness={0.55} />
+            <bevelBoxGeometry args={[0.45, 0.012, 0.012]} />
+            <Surface kind="walnut" color="#684a34" roughness={0.55} />
           </mesh>
           <mesh position={[0, 0.38 + y, 0.264]} rotation={[0, 0, Math.PI / 2]}>
             <cylinderGeometry args={[0.018, 0.018, 0.13, 10]} />
-            <meshStandardMaterial color="#efc07b" metalness={0.58} roughness={0.34} />
+            <Surface kind="brass" color="#efc07b" metalness={0.58} roughness={0.34} />
           </mesh>
         </group>
       ))}
@@ -981,21 +927,21 @@ function SideTable({ position }: { position: [number, number, number] }) {
         ([x, z]) => (
           <mesh key={`${x}-${z}`} position={[x, 0.27, z]}>
             <cylinderGeometry args={[0.025, 0.025, 0.52, 8]} />
-            <meshStandardMaterial color="#8f704d" metalness={0.65} roughness={0.34} />
+            <Surface kind="brass" color="#8f704d" metalness={0.65} roughness={0.34} />
           </mesh>
         ),
       )}
       <mesh position={[0, 0.7, 0]} castShadow>
         <cylinderGeometry args={[0.13, 0.13, 0.16, 16]} />
-        <meshStandardMaterial color="#c6a575" metalness={0.68} roughness={0.25} />
+        <Surface kind="brass" color="#c6a575" metalness={0.68} roughness={0.25} />
       </mesh>
       <mesh position={[0, 0.84, 0]}>
         <cylinderGeometry args={[0.035, 0.045, 0.18, 12]} />
-        <meshStandardMaterial color="#b89258" roughness={0.32} metalness={0.65} />
+        <Surface kind="brass" color="#b89258" roughness={0.32} metalness={0.65} />
       </mesh>
       <mesh position={[0, 0.98, 0]}>
         <coneGeometry args={[0.2, 0.22, 24, 1, true]} />
-        <meshStandardMaterial color="#e8dcc5" roughness={0.72} side={THREE.DoubleSide} />
+        <Surface kind="satin" color="#e8dcc5" roughness={0.72} side={THREE.DoubleSide} />
       </mesh>
       <mesh position={[0, 0.93, 0]}>
         <sphereGeometry args={[0.065, 16, 12]} />
@@ -1009,7 +955,7 @@ function UpholsteredChair({ position, rotation }: { position: [number, number, n
   return (
     <group position={position} rotation={[0, rotation, 0]}>
       <RoundedBox position={[0, 0.55, 0]} args={[0.68, 0.2, 0.68]} radius={0.07} smoothness={4} castShadow>
-        <meshStandardMaterial map={LINEN_TEXTURE} color="#d3c7b5" roughness={0.97} />
+        <Surface kind="linen" color="#b4a48b" roughness={0.97} />
       </RoundedBox>
       <RoundedBox
         position={[0, 1.01, -0.27]}
@@ -1019,20 +965,20 @@ function UpholsteredChair({ position, rotation }: { position: [number, number, n
         smoothness={4}
         castShadow
       >
-        <meshStandardMaterial map={LINEN_TEXTURE} color="#b8aa96" roughness={0.97} />
+        <Surface kind="linen" color="#9d8c73" roughness={0.97} />
       </RoundedBox>
       {[-0.27, 0.27].map((x) =>
         [-0.25, 0.25].map((z) => (
           <mesh key={`${x}-${z}`} position={[x, 0.28, z]} castShadow>
             <cylinderGeometry args={[0.027, 0.02, 0.5, 10]} />
-            <meshStandardMaterial color="#74583d" roughness={0.52} metalness={0.08} />
+            <Surface kind="walnut" color="#74583d" roughness={0.52} metalness={0.08} />
           </mesh>
         )),
       )}
       {[-0.3, 0.3].map((x) => (
         <mesh key={x} position={[x, 0.96, -0.27]} castShadow>
-          <boxGeometry args={[0.045, 0.76, 0.22]} />
-          <meshStandardMaterial color="#806346" roughness={0.48} />
+          <bevelBoxGeometry args={[0.045, 0.76, 0.22]} />
+          <Surface kind="walnut" color="#806346" roughness={0.48} />
         </mesh>
       ))}
     </group>
@@ -1046,13 +992,13 @@ function DiningSet({ position, round = true }: { position: [number, number, numb
         {round ? (
           <cylinderGeometry args={[0.82, 0.82, 0.12, 32]} />
         ) : (
-          <boxGeometry args={[1.8, 0.12, 0.95]} />
+          <bevelBoxGeometry args={[1.8, 0.12, 0.95]} />
         )}
-        <meshStandardMaterial map={WALNUT_TEXTURE} color="#e1cfb1" roughness={0.48} />
+        <Surface kind="walnut" color="#654325" roughness={0.48} />
       </mesh>
       <mesh position={[0, 0.47, 0]}>
         <cylinderGeometry args={[0.1, 0.16, 0.82, 12]} />
-        <meshStandardMaterial color="#a58a67" metalness={0.38} roughness={0.48} />
+        <Surface kind="brass" color="#a58a67" metalness={0.38} roughness={0.48} />
       </mesh>
       {[-1, 1].map((side) =>
         [-1, 1].map((forward) => (
@@ -1065,19 +1011,19 @@ function DiningSet({ position, round = true }: { position: [number, number, numb
       )}
       <mesh position={[0, 1.02, 0]}>
         <cylinderGeometry args={[0.13, 0.13, 0.025, 16]} />
-        <meshStandardMaterial color="#e8e0d1" roughness={0.55} />
+        <Surface kind="satin" color="#e8e0d1" roughness={0.55} />
       </mesh>
       <mesh position={[0.2, 1.09, 0]}>
         <cylinderGeometry args={[0.045, 0.055, 0.14, 12]} />
-        <meshStandardMaterial color="#6d4333" roughness={0.25} />
+        <Surface kind="satin" color="#6d4333" roughness={0.25} />
       </mesh>
       <mesh position={[-0.2, 1.075, 0.08]}>
         <cylinderGeometry args={[0.018, 0.025, 0.1, 10]} />
-        <meshStandardMaterial color="#e9e2d6" roughness={0.28} />
+        <Surface kind="satin" color="#e9e2d6" roughness={0.28} />
       </mesh>
       <mesh position={[-0.2, 1.13, 0.08]}>
         <cylinderGeometry args={[0.022, 0.022, 0.018, 12]} />
-        <meshStandardMaterial color="#b6925e" roughness={0.3} metalness={0.6} />
+        <Surface kind="brass" color="#b6925e" roughness={0.3} metalness={0.6} />
       </mesh>
     </group>
   );
@@ -1087,51 +1033,51 @@ function ReceptionDesk() {
   return (
     <group position={[0, 0, -1.8]}>
       <mesh position={[0, 0.72, 0]} castShadow receiveShadow>
-        <boxGeometry args={[3.5, 1.38, 0.88]} />
-        <meshStandardMaterial map={WALNUT_TEXTURE} color="#dfc7a6" roughness={0.5} />
+        <bevelBoxGeometry args={[3.5, 1.38, 0.88]} />
+        <Surface kind="walnut" color="#654023" roughness={0.5} />
       </mesh>
       <mesh position={[0, 0.72, 0.455]} castShadow>
-        <boxGeometry args={[3.22, 0.94, 0.045]} />
-        <meshStandardMaterial color="#71563a" roughness={0.48} />
+        <bevelBoxGeometry args={[3.22, 0.94, 0.045]} />
+        <Surface kind="walnut" color="#71563a" roughness={0.48} />
       </mesh>
       <mesh position={[0, 1.43, 0.02]} castShadow>
-        <boxGeometry args={[3.62, 0.12, 0.98]} />
-        <meshStandardMaterial color="#c1a477" roughness={0.34} metalness={0.1} />
+        <bevelBoxGeometry args={[3.62, 0.12, 0.98]} />
+        <Surface kind="satin" color="#c1a477" roughness={0.34} metalness={0.1} />
       </mesh>
       <mesh position={[0, 1.36, 0.02]}>
-        <boxGeometry args={[3.48, 0.035, 0.91]} />
-        <meshStandardMaterial color="#6e5237" roughness={0.36} />
+        <bevelBoxGeometry args={[3.48, 0.035, 0.91]} />
+        <Surface kind="satin" color="#6e5237" roughness={0.36} />
       </mesh>
       <mesh position={[0, 0.72, 0.45]}>
-        <boxGeometry args={[3.04, 0.74, 0.035]} />
-        <meshStandardMaterial map={WALNUT_TEXTURE} color="#a98a63" roughness={0.5} />
+        <bevelBoxGeometry args={[3.04, 0.74, 0.035]} />
+        <Surface kind="walnut" color="#4c2c15" roughness={0.5} />
       </mesh>
       {Array.from({ length: 23 }, (_, i) => (
         <mesh key={i} position={[-1.38 + i * 0.125, 0.72, 0.478]}>
-          <boxGeometry args={[0.025, 0.72, 0.035]} />
-          <meshStandardMaterial color={i % 2 ? "#c4a878" : "#dfc69c"} roughness={0.42} metalness={0.2} />
+          <bevelBoxGeometry args={[0.025, 0.72, 0.035]} />
+          <Surface kind="walnut" color={i % 2 ? "#c4a878" : "#dfc69c"} roughness={0.42} metalness={0.2} />
         </mesh>
       ))}
       <mesh position={[0, 0.72, 0.51]}>
         <torusGeometry args={[0.2, 0.012, 8, 48]} />
-        <meshStandardMaterial color="#d6b77f" roughness={0.28} metalness={0.68} />
+        <Surface kind="brass" color="#d6b77f" roughness={0.28} metalness={0.68} />
       </mesh>
       <mesh position={[0, 0.72, 0.51]}>
         <circleGeometry args={[0.16, 40]} />
-        <meshStandardMaterial color="#76583a" roughness={0.55} />
+        <Surface kind="walnut" color="#76583a" roughness={0.55} />
       </mesh>
       <mesh position={[0, 0.72, 0.525]} rotation={[0, 0, Math.PI]}>
         <coneGeometry args={[0.08, 0.13, 3]} />
-        <meshStandardMaterial color="#d8bb88" roughness={0.32} metalness={0.42} />
+        <Surface kind="brass" color="#d8bb88" roughness={0.32} metalness={0.42} />
       </mesh>
       <mesh position={[0, 1.02, 0.52]}>
-        <boxGeometry args={[3.12, 0.025, 0.025]} />
-        <meshStandardMaterial color="#d5b77f" roughness={0.3} metalness={0.62} />
+        <bevelBoxGeometry args={[3.12, 0.025, 0.025]} />
+        <Surface kind="brass" color="#d5b77f" roughness={0.3} metalness={0.62} />
       </mesh>
       {[-1.64, 1.64].map((x) => (
         <mesh key={x} position={[x, 0.75, 0.08]}>
-          <boxGeometry args={[0.035, 1.18, 0.88]} />
-          <meshStandardMaterial color="#c9aa76" roughness={0.34} metalness={0.48} />
+          <bevelBoxGeometry args={[0.035, 1.18, 0.88]} />
+          <Surface kind="brass" color="#c9aa76" roughness={0.34} metalness={0.48} />
         </mesh>
       ))}
     </group>
@@ -1144,23 +1090,23 @@ function LobbyLounge() {
       <Sofa position={[-2.05, 0, 1.55]} rotation={Math.PI} />
       <Sofa position={[2.05, 0, 1.55]} rotation={Math.PI} />
       <RoundedBox position={[0, 0.43, 0.52]} args={[1.72, 0.13, 0.86]} radius={0.055} smoothness={4} castShadow receiveShadow>
-        <meshStandardMaterial map={WALNUT_TEXTURE} color="#bc9b70" roughness={0.43} />
+        <Surface kind="walnut" color="#553218" roughness={0.43} />
       </RoundedBox>
       {[-0.68, 0.68].flatMap((x) =>
         [-0.25, 0.25].map((z) => (
           <mesh key={`${x}-${z}`} position={[x, 0.2, 0.52 + z]} castShadow>
             <cylinderGeometry args={[0.026, 0.03, 0.38, 10]} />
-            <meshStandardMaterial color="#74583d" roughness={0.4} metalness={0.22} />
+            <Surface kind="walnut" color="#74583d" roughness={0.4} metalness={0.22} />
           </mesh>
         )),
       )}
       <mesh position={[0, 0.52, 0.52]}>
         <cylinderGeometry args={[0.16, 0.16, 0.025, 24]} />
-        <meshPhysicalMaterial color="#e8e0d1" roughness={0.22} />
+        <Surface kind="ceramic" physical color="#e8e0d1" roughness={0.22} />
       </mesh>
       <mesh position={[0, 0.56, 0.52]}>
         <sphereGeometry args={[0.07, 16, 12]} />
-        <meshStandardMaterial color="#c08a5a" roughness={0.48} />
+        <Surface kind="walnut" color="#c08a5a" roughness={0.48} />
       </mesh>
       <UpholsteredChair position={[-0.1, 0, 3.25]} rotation={Math.PI} />
       <UpholsteredChair position={[0.1, 0, -0.5]} rotation={0} />
@@ -1179,36 +1125,36 @@ function LobbyArtwork() {
       {paintings.map(({ x, base, accent, secondary }, index) => (
         <group key={x} position={[x, 1.96, -4.31]}>
           <mesh castShadow>
-            <boxGeometry args={[1.34, 1.68, 0.13]} />
-            <meshStandardMaterial map={WALNUT_TEXTURE} color="#72583c" roughness={0.46} />
+            <bevelBoxGeometry args={[1.34, 1.68, 0.13]} />
+            <Surface kind="walnut" color="#331c0d" roughness={0.46} />
           </mesh>
           <mesh position={[0, 0, 0.073]}>
-            <boxGeometry args={[1.2, 1.54, 0.025]} />
-            <meshStandardMaterial color="#d4bd96" roughness={0.38} metalness={0.26} />
+            <bevelBoxGeometry args={[1.2, 1.54, 0.025]} />
+            <Surface kind="satin" color="#d4bd96" roughness={0.38} metalness={0.26} />
           </mesh>
           <mesh position={[0, 0, 0.092]}>
-            <boxGeometry args={[1.12, 1.46, 0.025]} />
-            <meshStandardMaterial color={base} roughness={0.91} />
+            <bevelBoxGeometry args={[1.12, 1.46, 0.025]} />
+            <Surface kind="linen" color={base} roughness={0.91} />
           </mesh>
           <mesh position={[-0.2, -0.16, 0.113]} rotation={[0, 0, index ? 0.27 : -0.2]} scale={[0.25, 0.61, 0.025]}>
             <sphereGeometry args={[1, 20, 16]} />
-            <meshStandardMaterial color={accent} roughness={0.92} />
+            <Surface kind="linen" color={accent} roughness={0.92} />
           </mesh>
           <mesh position={[0.23, 0.18, 0.12]} rotation={[0, 0, index ? -0.58 : 0.48]} scale={[0.22, 0.43, 0.025]}>
             <sphereGeometry args={[1, 20, 16]} />
-            <meshStandardMaterial color={secondary} roughness={0.88} />
+            <Surface kind="linen" color={secondary} roughness={0.88} />
           </mesh>
           <mesh position={[0.05, -0.34, 0.125]} rotation={[0, 0, -0.12]}>
-            <boxGeometry args={[0.72, 0.055, 0.018]} />
-            <meshStandardMaterial color="#8f7758" roughness={0.84} />
+            <bevelBoxGeometry args={[0.72, 0.055, 0.018]} />
+            <Surface kind="walnut" color="#8f7758" roughness={0.84} />
           </mesh>
           <mesh position={[0, 0.65, 0.12]}>
-            <boxGeometry args={[0.66, 0.018, 0.018]} />
-            <meshStandardMaterial color="#b6925e" roughness={0.35} metalness={0.48} />
+            <bevelBoxGeometry args={[0.66, 0.018, 0.018]} />
+            <Surface kind="brass" color="#b6925e" roughness={0.35} metalness={0.48} />
           </mesh>
           <mesh position={[0, 1.02, 0.12]}>
-            <boxGeometry args={[0.38, 0.08, 0.12]} />
-            <meshStandardMaterial color="#ab8d62" roughness={0.36} metalness={0.48} />
+            <bevelBoxGeometry args={[0.38, 0.08, 0.12]} />
+            <Surface kind="brass" color="#ab8d62" roughness={0.36} metalness={0.48} />
           </mesh>
           <pointLight position={[0, 0.88, 0.45]} intensity={0.75} distance={2.2} color="#ffe4ba" />
         </group>
@@ -1221,21 +1167,21 @@ function LobbyFloorDetails() {
   return (
     <group>
       <mesh position={[0, 0.075, 1.38]} receiveShadow>
-        <boxGeometry args={[6.35, 0.045, 3.72]} />
-        <meshStandardMaterial map={LINEN_TEXTURE} color="#8d7b62" roughness={0.98} />
+        <bevelBoxGeometry args={[6.35, 0.045, 3.72]} />
+        <Surface kind="rug" color="#79654b" roughness={0.98} />
       </mesh>
       <mesh position={[0, 0.101, 1.38]}>
-        <boxGeometry args={[6.12, 0.012, 3.49]} />
-        <meshStandardMaterial color="#c7b390" roughness={0.88} />
+        <bevelBoxGeometry args={[6.12, 0.012, 3.49]} />
+        <Surface kind="fabric" color="#c7b390" roughness={0.88} />
       </mesh>
       <mesh position={[0, 0.11, 1.38]}>
-        <boxGeometry args={[5.98, 0.012, 3.35]} />
-        <meshStandardMaterial map={LINEN_TEXTURE} color="#9b896f" roughness={0.98} />
+        <bevelBoxGeometry args={[5.98, 0.012, 3.35]} />
+        <Surface kind="rug" color="#857155" roughness={0.98} />
       </mesh>
       {[-2.91, 2.91].map((x) => (
         <mesh key={x} position={[x, 0.12, 1.38]}>
-          <boxGeometry args={[0.018, 0.01, 3.18]} />
-          <meshStandardMaterial color="#d7bb88" roughness={0.35} metalness={0.3} />
+          <bevelBoxGeometry args={[0.018, 0.01, 3.18]} />
+          <Surface kind="brass" color="#d7bb88" roughness={0.35} metalness={0.3} />
         </mesh>
       ))}
     </group>
@@ -1247,11 +1193,11 @@ function LobbyLighting() {
     <group>
       <mesh position={[0, 3.05, 0.35]}>
         <cylinderGeometry args={[0.025, 0.025, 0.32, 12]} />
-        <meshStandardMaterial color="#b18c57" roughness={0.28} metalness={0.72} />
+        <Surface kind="brass" color="#b18c57" roughness={0.28} metalness={0.72} />
       </mesh>
       <mesh position={[0, 2.86, 0.35]}>
         <sphereGeometry args={[0.18, 24, 16]} />
-        <meshPhysicalMaterial color="#c5a36d" roughness={0.22} metalness={0.62} />
+        <Surface kind="brass" physical color="#c5a36d" roughness={0.22} metalness={0.62} />
       </mesh>
       {Array.from({ length: 6 }, (_, index) => {
         const angle = (index / 6) * Math.PI * 2;
@@ -1261,7 +1207,7 @@ function LobbyLighting() {
           <group key={index} position={[x, 2.76, z]}>
             <mesh position={[0, 0.12, 0]}>
               <cylinderGeometry args={[0.012, 0.012, 0.28, 8]} />
-              <meshStandardMaterial color="#bd9b68" roughness={0.3} metalness={0.65} />
+              <Surface kind="brass" color="#bd9b68" roughness={0.3} metalness={0.65} />
             </mesh>
             <mesh position={[0, -0.04, 0]}>
               <sphereGeometry args={[0.12, 18, 14]} />
@@ -1281,42 +1227,42 @@ function WritingDesk() {
     <group>
       <group position={[4.6, 0, 3.05]}>
         <RoundedBox position={[0, 0.79, 0]} args={[2, 0.13, 0.72]} radius={0.035} smoothness={3} castShadow receiveShadow>
-          <meshStandardMaterial map={WALNUT_TEXTURE} color="#e1ceb0" roughness={0.48} />
+          <Surface kind="walnut" color="#654225" roughness={0.48} />
         </RoundedBox>
         <mesh position={[0, 0.58, -0.18]} castShadow>
-          <boxGeometry args={[1.48, 0.34, 0.38]} />
-          <meshStandardMaterial map={WALNUT_TEXTURE} color="#cbb18d" roughness={0.55} />
+          <bevelBoxGeometry args={[1.48, 0.34, 0.38]} />
+          <Surface kind="walnut" color="#5c391e" roughness={0.55} />
         </mesh>
         {[-0.84, 0.84].map((x) => (
           <mesh key={x} position={[x, 0.38, 0.02]} castShadow>
-            <boxGeometry args={[0.08, 0.7, 0.58]} />
-            <meshStandardMaterial map={WALNUT_TEXTURE} color="#d5c09f" roughness={0.52} />
+            <bevelBoxGeometry args={[0.08, 0.7, 0.58]} />
+            <Surface kind="walnut" color="#603e22" roughness={0.52} />
           </mesh>
         ))}
         <mesh position={[0, 0.73, 0.22]}>
-          <boxGeometry args={[0.42, 0.012, 0.018]} />
-          <meshStandardMaterial color="#a17c4d" roughness={0.34} metalness={0.48} />
+          <bevelBoxGeometry args={[0.42, 0.012, 0.018]} />
+          <Surface kind="brass" color="#a17c4d" roughness={0.34} metalness={0.48} />
         </mesh>
         <mesh position={[-0.55, 0.88, -0.13]} rotation={[-0.06, 0, -0.08]} castShadow>
-          <boxGeometry args={[0.4, 0.035, 0.28]} />
-          <meshStandardMaterial color="#a18b6e" roughness={0.8} />
+          <bevelBoxGeometry args={[0.4, 0.035, 0.28]} />
+          <Surface kind="walnut" color="#a18b6e" roughness={0.8} />
         </mesh>
         <mesh position={[-0.53, 0.91, -0.13]} rotation={[-0.06, 0, -0.08]}>
-          <boxGeometry args={[0.34, 0.012, 0.24]} />
-          <meshStandardMaterial color="#e6ddcc" roughness={0.94} />
+          <bevelBoxGeometry args={[0.34, 0.012, 0.24]} />
+          <Surface kind="fabric" color="#e6ddcc" roughness={0.94} />
         </mesh>
         <group position={[0.63, 0.87, -0.15]}>
           <mesh position={[0, 0.04, 0]}>
             <cylinderGeometry args={[0.13, 0.16, 0.05, 20]} />
-            <meshStandardMaterial color="#9d805d" roughness={0.42} metalness={0.32} />
+            <Surface kind="brass" color="#9d805d" roughness={0.42} metalness={0.32} />
           </mesh>
           <mesh position={[0, 0.28, 0]}>
             <cylinderGeometry args={[0.025, 0.035, 0.48, 10]} />
-            <meshStandardMaterial color="#92744d" roughness={0.42} metalness={0.45} />
+            <Surface kind="brass" color="#92744d" roughness={0.42} metalness={0.45} />
           </mesh>
           <mesh position={[0, 0.52, 0]} rotation={[0, 0, -0.15]}>
             <coneGeometry args={[0.18, 0.2, 20, 1, true]} />
-            <meshStandardMaterial color="#d7c7aa" roughness={0.72} side={THREE.DoubleSide} />
+            <Surface kind="satin" color="#d7c7aa" roughness={0.72} side={THREE.DoubleSide} />
           </mesh>
           <pointLight position={[0, 0.48, 0]} intensity={1.6} distance={2.2} color="#f4d39c" />
         </group>
@@ -1337,21 +1283,21 @@ function WallArtwork() {
   return (
     <group position={[-3.6, 1.94, -4.31]}>
       <mesh castShadow receiveShadow>
-        <boxGeometry args={[1.52, 1.72, 0.1]} />
-        <meshStandardMaterial map={WALNUT_TEXTURE} color="#30251f" roughness={0.52} />
+        <bevelBoxGeometry args={[1.52, 1.72, 0.1]} />
+        <Surface kind="walnut" color="#160c07" roughness={0.52} />
       </mesh>
       <mesh position={[0, 0, 0.058]}>
-        <boxGeometry args={[1.39, 1.59, 0.025]} />
-        <meshStandardMaterial color="#efc07b" roughness={0.36} metalness={0.5} />
+        <bevelBoxGeometry args={[1.39, 1.59, 0.025]} />
+        <Surface kind="brass" color="#efc07b" roughness={0.36} metalness={0.5} />
       </mesh>
       <mesh position={[0, 0, 0.079]}>
-        <boxGeometry args={[1.34, 1.54, 0.025]} />
-        <meshStandardMaterial color="#0f3460" roughness={0.66} metalness={0.1} />
+        <bevelBoxGeometry args={[1.34, 1.54, 0.025]} />
+        <Surface kind="satin" color="#0f3460" roughness={0.66} metalness={0.1} />
       </mesh>
       {veins.map((curve, index) => (
         <mesh key={index} castShadow>
           <tubeGeometry args={[curve, 32, index === 0 ? 0.012 : 0.007, 6, false]} />
-          <meshStandardMaterial
+          <Surface kind="brass"
             color={index === 0 ? "#efc07b" : "#d9b36f"}
             roughness={0.36}
             metalness={0.48}
@@ -1370,7 +1316,7 @@ function WallArtwork() {
         return (
           <mesh key={index}>
             <tubeGeometry args={[curve, 12, 0.0035, 5, false]} />
-            <meshStandardMaterial color="#efc07b" roughness={0.45} metalness={0.52} />
+            <Surface kind="brass" color="#efc07b" roughness={0.45} metalness={0.52} />
           </mesh>
         );
       })}
@@ -1452,7 +1398,7 @@ function FeatureObject({
       <Interactive {...interactive}>
         <group position={[4.1, 0, -2.8]}>
           <mesh position={[0, 0.9, 0]}>
-            <boxGeometry args={[3.8, 1.8, 3.05]} />
+            <bevelBoxGeometry args={[3.8, 1.8, 3.05]} />
             <meshBasicMaterial transparent opacity={0} colorWrite={false} depthWrite={false} />
           </mesh>
         </group>
@@ -1464,7 +1410,7 @@ function FeatureObject({
       <Interactive {...interactive}>
         <group position={[5, 0, -0.2]}>
           <mesh position={[0, 0.8, 0]}>
-            <boxGeometry args={[1.7, 1.6, 1.65]} />
+            <bevelBoxGeometry args={[1.7, 1.6, 1.65]} />
             <meshBasicMaterial transparent opacity={0} colorWrite={false} depthWrite={false} />
           </mesh>
         </group>
@@ -1478,19 +1424,19 @@ function FeatureObject({
         <group position={[1.8, 0, 0.15]}>
           <Sofa position={[0, 0, 0]} />
           <RoundedBox position={[0, 0.4, 1.35]} args={[1.45, 0.1, 0.78]} radius={0.05} smoothness={3} castShadow>
-            <meshStandardMaterial map={WALNUT_TEXTURE} color="#ddc8a9" roughness={0.48} />
+            <Surface kind="walnut" color="#644024" roughness={0.48} />
           </RoundedBox>
           {[-0.58, 0.58].flatMap((x) =>
             [-0.28, 0.28].map((z) => (
               <mesh key={`${x}-${z}`} position={[x, 0.2, 1.35 + z]}>
                 <cylinderGeometry args={[0.025, 0.025, 0.4, 8]} />
-                <meshStandardMaterial color="#70583e" roughness={0.48} metalness={0.12} />
+                <Surface kind="walnut" color="#70583e" roughness={0.48} metalness={0.12} />
               </mesh>
             )),
           )}
           <mesh position={[0, 0.47, 1.35]}>
             <cylinderGeometry args={[0.12, 0.12, 0.025, 20]} />
-            <meshStandardMaterial color="#e9e1d3" roughness={0.48} />
+            <Surface kind="satin" color="#e9e1d3" roughness={0.48} />
           </mesh>
           <group position={[2.1, 0, 0.55]}>
             <UpholsteredChair position={[0, 0, 0]} rotation={-Math.PI / 2} />
@@ -1526,8 +1472,8 @@ function FeatureObject({
         <Plant position={[5, 0.03, 2.3]} />
         {feature.id === "terrace" && (
           <mesh position={[4.8, 0.08, 3.2]} castShadow>
-            <boxGeometry args={[2.2, 0.12, 0.52]} />
-            <meshStandardMaterial color="#a78b68" roughness={0.65} />
+            <bevelBoxGeometry args={[2.2, 0.12, 0.52]} />
+            <Surface kind="walnut" color="#a78b68" roughness={0.65} />
           </mesh>
         )}
       </Interactive>
@@ -1547,13 +1493,13 @@ function FeatureObject({
       <Interactive {...interactive}>
         <group position={[-4.5, 0.4, -4]}>
           <mesh position={[0, 1.3, 0]}>
-            <boxGeometry args={[1.1, 2.4, 0.38]} />
-            <meshStandardMaterial color="#57422f" roughness={0.58} />
+            <bevelBoxGeometry args={[1.1, 2.4, 0.38]} />
+            <Surface kind="walnut" color="#57422f" roughness={0.58} />
           </mesh>
           {Array.from({ length: 4 }, (_, i) => (
             <mesh key={i} position={[0, 0.45 + i * 0.5, 0.23]} rotation={[0, 0, Math.PI / 2]}>
               <cylinderGeometry args={[0.085, 0.085, 0.4, 12]} />
-              <meshStandardMaterial color={i % 2 ? "#784d37" : "#463c32"} roughness={0.3} />
+              <Surface kind="satin" color={i % 2 ? "#784d37" : "#463c32"} roughness={0.3} />
             </mesh>
           ))}
         </group>
@@ -1567,15 +1513,15 @@ function FeatureObject({
           <UpholsteredChair position={[0, 0, 0]} rotation={-Math.PI / 2} />
           <mesh position={[-0.82, 0.5, 0.05]} castShadow>
             <cylinderGeometry args={[0.34, 0.38, 0.1, 24]} />
-            <meshStandardMaterial map={WALNUT_TEXTURE} color="#ddc8a9" roughness={0.48} />
+            <Surface kind="walnut" color="#644024" roughness={0.48} />
           </mesh>
           <mesh position={[-0.82, 0.25, 0.05]}>
             <cylinderGeometry args={[0.035, 0.05, 0.48, 10]} />
-            <meshStandardMaterial color="#816443" roughness={0.44} metalness={0.32} />
+            <Surface kind="brass" color="#816443" roughness={0.44} metalness={0.32} />
           </mesh>
           <mesh position={[-0.82, 0.78, 0.05]}>
             <cylinderGeometry args={[0.105, 0.14, 0.13, 18]} />
-            <meshPhysicalMaterial color="#eee5d7" roughness={0.24} />
+            <Surface kind="ceramic" physical color="#eee5d7" roughness={0.24} />
           </mesh>
         </group>
       </Interactive>
@@ -1586,18 +1532,18 @@ function FeatureObject({
       <Interactive {...interactive}>
         <group position={[3.7, 0, -3.1]}>
           <RoundedBox position={[0, 0.48, 0]} args={[1.95, 0.24, 0.72]} radius={0.06} smoothness={3} castShadow>
-            <meshStandardMaterial map={WALNUT_TEXTURE} color="#d7c3a3" roughness={0.52} />
+            <Surface kind="walnut" color="#613f23" roughness={0.52} />
           </RoundedBox>
           <RoundedBox position={[0, 0.66, 0.04]} args={[1.82, 0.16, 0.63]} radius={0.08} smoothness={4} castShadow>
-            <meshStandardMaterial map={LINEN_TEXTURE} color="#d9cdbb" roughness={0.97} />
+            <Surface kind="linen" color="#baa990" roughness={0.97} />
           </RoundedBox>
           <RoundedBox position={[0, 1.02, -0.25]} args={[1.88, 0.68, 0.16]} radius={0.08} smoothness={4} castShadow>
-            <meshStandardMaterial map={LINEN_TEXTURE} color="#c5b49b" roughness={0.97} />
+            <Surface kind="linen" color="#a89477" roughness={0.97} />
           </RoundedBox>
           {[-0.75, 0.75].map((x) => (
             <mesh key={x} position={[x, 0.93, 0.13]} castShadow>
-              <boxGeometry args={[0.015, 0.4, 0.018]} />
-              <meshStandardMaterial color="#a58255" roughness={0.4} metalness={0.35} />
+              <bevelBoxGeometry args={[0.015, 0.4, 0.018]} />
+              <Surface kind="brass" color="#a58255" roughness={0.4} metalness={0.35} />
             </mesh>
           ))}
         </group>
@@ -1615,17 +1561,17 @@ function FeatureObject({
     <Interactive {...interactive}>
       <group position={[4.4, 0, -2.3]}>
         <mesh position={[0, 1.4, 0]} castShadow>
-          <boxGeometry args={[1.8, 2.6, 0.14]} />
-          <meshStandardMaterial color="#513f30" roughness={0.68} />
+          <bevelBoxGeometry args={[1.8, 2.6, 0.14]} />
+          <Surface kind="walnut" color="#513f30" roughness={0.68} />
         </mesh>
         <mesh position={[0, 1.4, 0.09]}>
-          <boxGeometry args={[1.62, 2.38, 0.045]} />
-          <meshStandardMaterial color="#787767" roughness={0.82} />
+          <bevelBoxGeometry args={[1.62, 2.38, 0.045]} />
+          <Surface kind="satin" color="#787767" roughness={0.82} />
         </mesh>
         {[-0.68, 0, 0.68].map((x) => (
           <mesh key={x} position={[x, 1.4, 0.14]} castShadow>
-            <boxGeometry args={[0.06, 2.2, 0.12]} />
-            <meshStandardMaterial color="#c0a376" metalness={0.36} roughness={0.4} />
+            <bevelBoxGeometry args={[0.06, 2.2, 0.12]} />
+            <Surface kind="brass" color="#c0a376" metalness={0.36} roughness={0.4} />
           </mesh>
         ))}
       </group>
@@ -1640,7 +1586,7 @@ function CeilingLights() {
         <group key={x} position={[x, 2.95, -0.3]}>
           <mesh position={[0, 0.2, 0]}>
             <cylinderGeometry args={[0.018, 0.018, 0.38, 8]} />
-            <meshStandardMaterial color="#9d835f" metalness={0.7} roughness={0.25} />
+            <Surface kind="brass" color="#9d835f" metalness={0.7} roughness={0.25} />
           </mesh>
           <mesh position={[0, -0.05, 0]}>
             <sphereGeometry args={[0.22, 20, 12]} />
@@ -1846,6 +1792,7 @@ export default function InteriorScene({
         }
       }}
     >
+      <SurfaceUVs />
       <InteriorRoom
         floor={floor}
         selectedFeature={selectedFeature}
