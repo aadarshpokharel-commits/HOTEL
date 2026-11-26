@@ -1,6 +1,7 @@
 import { RoundedBox } from "@react-three/drei";
 import { useMemo, type ReactNode } from "react";
 import * as THREE from "three";
+import { useAbstractArt } from "../../three/artwork";
 import { Model } from "../../three/assets";
 import { PBRMaterial } from "../../three/pbr";
 import { curtainGeometry, drapeGeometry, pillowGeometry } from "../../three/softGeometry";
@@ -38,7 +39,7 @@ function markDrape(geometry: THREE.BufferGeometry) {
   return geometry;
 }
 
-function BedsideLamp({ position, scale = 1, light = true }: { position: [number, number, number]; scale?: number; light?: boolean }) {
+export function BedsideLamp({ position, scale = 1, light = true }: { position: [number, number, number]; scale?: number; light?: boolean }) {
   const base = useMemo(() => {
     const profile = [
       [0, 0], [0.055, 0], [0.062, 0.012], [0.085, 0.06], [0.098, 0.13], [0.09, 0.2],
@@ -285,42 +286,6 @@ function useDuskTexture() {
   }, []);
 }
 
-function useArtTexture() {
-  return useMemo(() => {
-    const canvas = document.createElement("canvas");
-    canvas.width = 768;
-    canvas.height = 384;
-    const ctx = canvas.getContext("2d")!;
-    ctx.fillStyle = "#e8ddca";
-    ctx.fillRect(0, 0, 768, 384);
-    // A quiet abstract landscape: layered washes in ochre, sage and ink.
-    const wash = (x: number, y: number, r: number, color: string, alpha: number) => {
-      const g = ctx.createRadialGradient(x, y, 0, x, y, r);
-      g.addColorStop(0, color);
-      g.addColorStop(1, "rgba(0,0,0,0)");
-      ctx.globalAlpha = alpha;
-      ctx.fillStyle = g;
-      ctx.fillRect(0, 0, 768, 384);
-    };
-    wash(220, 250, 260, "#c08a4e", 0.55);
-    wash(520, 210, 240, "#7d8a6a", 0.5);
-    wash(650, 300, 160, "#2f3a3c", 0.45);
-    wash(120, 120, 140, "#d9b98a", 0.5);
-    ctx.globalAlpha = 0.75;
-    ctx.strokeStyle = "#2a2522";
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(40, 270);
-    ctx.bezierCurveTo(220, 200, 380, 310, 520, 240);
-    ctx.bezierCurveTo(610, 200, 690, 230, 740, 210);
-    ctx.stroke();
-    ctx.globalAlpha = 1;
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.colorSpace = THREE.SRGBColorSpace;
-    return texture;
-  }, []);
-}
-
 function Curtain({ position, width, height, pleats, sheer = false, seed = 1 }: {
   position: [number, number, number];
   width: number;
@@ -346,7 +311,7 @@ function Curtain({ position, width, height, pleats, sheer = false, seed = 1 }: {
 /** Everything in the bedroom except the (interactive) bed. */
 export function BedroomFurnishings() {
   const dusk = useDuskTexture();
-  const art = useArtTexture();
+  const art = useAbstractArt(0, 2);
   const { wallX, northZ, eastX, southZ } = BEDROOM;
   const roomW = eastX - wallX;
   const roomD = southZ - northZ;

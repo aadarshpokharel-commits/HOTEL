@@ -90,16 +90,34 @@ Verified: `tsc` and `vite build` pass; residence opens with no console errors;
 clicking the bed opens its detail card and focuses the camera; mobile loads
 only `.mobile` assets; the building view loads no interior assets.
 
-Not done / carried forward: `modern_wooden_cabinet` was downloaded but is not
-placed yet (intended for the living room, Phase 3). Frame-rate was not
+Not done / carried forward: `modern_wooden_cabinet` is now used as the lobby
+console (Phase 3). Frame-rate was not
 measured: the browser pane was backgrounded during testing, so timings were
 throttled and unreliable. To keep integrated GPUs safe the sheer uses plain
 alpha (no transmission pass) and both bedside lamps share one point light.
 
 ### Phase 3 — Bathrooms, restaurant, other interiors
-Marble bathrooms with glass shower, vanity, basin, WC, bathtub in suites,
-fittings, towel rails. Restaurant identity (needs a decision on which floor —
-see §4). Lobby upgrade. *Not started.*
+*In progress.* Lobby done 2026-11-26 (`src/components/interior/Lobby.tsx`);
+bathrooms and restaurant not started (restaurant floor still needs a decision —
+see §4).
+
+| Lobby item | Source | Status |
+| --- | --- | --- |
+| Large-format travertine floor (1.2 m tiles, fine joints) | code-built | ✅ |
+| Curved reception desk: hand-fluted travertine front, polished top, brass plinth and shadow line, walnut back counter, terminals, lamps, service bell | code-built | ✅ |
+| Fluted walnut feature wall with cove lighting and brass lettering | code-built + CC0 walnut texture | ✅ |
+| Globe pendants over the desk | **Poly Haven GLB** | ✅ |
+| Lounge: bouclé sofa, travertine pedestal coffee table with books and brass bowl, wool rug | code-built | ✅ |
+| Lounge chairs ×4, ottomans ×2, walnut console, vases, plants ×4 | **Poly Haven GLB** (already downloaded) | ✅ |
+| Brass ring chandelier with frosted globes | code-built | ✅ |
+| Travertine-clad west wall, console with lamp, painting, brass sconces | code-built | ✅ |
+| North-wall paintings with brass picture lights (original procedural art) | code-built | ✅ |
+| Brass luggage trolley with suitcase and garment bag | code-built | ✅ |
+| Lobby details stay clickable (desk, lounge, flowers, art) | — | ✅ |
+
+Verified: `tsc` and `vite build` pass; lobby renders with no console errors
+on desktop and 375 px mobile; clicking the desk opens its card and focuses the
+camera. No new downloads were needed. Frame rate not measured (background pane).
 
 ### Phase 4 — Floor cutaway
 True per-floor plan: structural walls, partitions, door frames and doors,

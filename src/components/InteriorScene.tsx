@@ -8,6 +8,15 @@ import { Surface, SurfaceUVs } from "../three/Surface";
 import { Model, preloadModels } from "../three/assets";
 import { preloadPBR } from "../three/pbr";
 import { BED_CENTER, BedroomFurnishings, PlacedBed, WINDOW, mattressWidthFor } from "./interior/Bedroom";
+import {
+  LOUNGE_CENTER,
+  LobbyArchitecture,
+  LobbyArtwork,
+  LobbyDecor,
+  LobbyLighting,
+  LobbyLounge,
+  ReceptionDesk,
+} from "./interior/Lobby";
 
 export type InteriorFeature = {
   id: string;
@@ -128,7 +137,7 @@ function Interactive({
   );
 }
 
-function FloorSurface() {
+function FloorSurface({ livingRug = true }: { livingRug?: boolean }) {
   return (
     <group>
       <mesh position={[0, -0.13, 0]} receiveShadow>
@@ -138,7 +147,7 @@ function FloorSurface() {
           roughness={0.78}
         />
       </mesh>
-      <group position={[1.8, 0.012, 0.65]} receiveShadow>
+      {livingRug && <group position={[1.8, 0.012, 0.65]} receiveShadow>
         <mesh receiveShadow>
           <bevelBoxGeometry args={[4.8, 0.025, 3.4]} />
           <Surface kind="rug" color="#17394b" roughness={0.94} />
@@ -204,15 +213,15 @@ function FloorSurface() {
             )),
           )}
         </group>
-      </group>
+      </group>}
     </group>
   );
 }
 
-function RoomShell({ bedroomWindow = false }: { bedroomWindow?: boolean }) {
+function RoomShell({ residence = false }: { residence?: boolean }) {
   return (
     <group>
-      <FloorSurface />
+      <FloorSurface livingRug={residence} />
       <mesh position={[-6.15, 1.18, 0]} receiveShadow>
         <bevelBoxGeometry args={[0.22, 2.36, 9.1]} />
         <Surface kind="plaster" color="#9a8c74" roughness={0.92} />
@@ -224,7 +233,7 @@ function RoomShell({ bedroomWindow = false }: { bedroomWindow?: boolean }) {
           roughness={0.92}
         />
       </mesh>
-      {bedroomWindow ? (
+      {residence ? (
         // North bedroom wall, opened for a window (see interior/Bedroom).
         [
           { x: (-6.15 + WINDOW.x0) / 2, y: 1.65, w: WINDOW.x0 + 6.15, h: 3.3 },
@@ -892,199 +901,6 @@ function DiningSet({ position, round = true }: { position: [number, number, numb
   );
 }
 
-function ReceptionDesk() {
-  return (
-    <group position={[0, 0, -1.8]}>
-      <mesh position={[0, 0.72, 0]} castShadow receiveShadow>
-        <bevelBoxGeometry args={[3.5, 1.38, 0.88]} />
-        <Surface kind="walnut" color="#654023" roughness={0.5} />
-      </mesh>
-      <mesh position={[0, 0.72, 0.455]} castShadow>
-        <bevelBoxGeometry args={[3.22, 0.94, 0.045]} />
-        <Surface kind="walnut" color="#71563a" roughness={0.48} />
-      </mesh>
-      <mesh position={[0, 1.43, 0.02]} castShadow>
-        <bevelBoxGeometry args={[3.62, 0.12, 0.98]} />
-        <Surface kind="satin" color="#c1a477" roughness={0.34} metalness={0.1} />
-      </mesh>
-      <mesh position={[0, 1.36, 0.02]}>
-        <bevelBoxGeometry args={[3.48, 0.035, 0.91]} />
-        <Surface kind="satin" color="#6e5237" roughness={0.36} />
-      </mesh>
-      <mesh position={[0, 0.72, 0.45]}>
-        <bevelBoxGeometry args={[3.04, 0.74, 0.035]} />
-        <Surface kind="walnut" color="#4c2c15" roughness={0.5} />
-      </mesh>
-      {Array.from({ length: 23 }, (_, i) => (
-        <mesh key={i} position={[-1.38 + i * 0.125, 0.72, 0.478]}>
-          <bevelBoxGeometry args={[0.025, 0.72, 0.035]} />
-          <Surface kind="walnut" color={i % 2 ? "#c4a878" : "#dfc69c"} roughness={0.42} metalness={0.2} />
-        </mesh>
-      ))}
-      <mesh position={[0, 0.72, 0.51]}>
-        <torusGeometry args={[0.2, 0.012, 8, 48]} />
-        <Surface kind="brass" color="#d6b77f" roughness={0.28} metalness={0.68} />
-      </mesh>
-      <mesh position={[0, 0.72, 0.51]}>
-        <circleGeometry args={[0.16, 40]} />
-        <Surface kind="walnut" color="#76583a" roughness={0.55} />
-      </mesh>
-      <mesh position={[0, 0.72, 0.525]} rotation={[0, 0, Math.PI]}>
-        <coneGeometry args={[0.08, 0.13, 3]} />
-        <Surface kind="brass" color="#d8bb88" roughness={0.32} metalness={0.42} />
-      </mesh>
-      <mesh position={[0, 1.02, 0.52]}>
-        <bevelBoxGeometry args={[3.12, 0.025, 0.025]} />
-        <Surface kind="brass" color="#d5b77f" roughness={0.3} metalness={0.62} />
-      </mesh>
-      {[-1.64, 1.64].map((x) => (
-        <mesh key={x} position={[x, 0.75, 0.08]}>
-          <bevelBoxGeometry args={[0.035, 1.18, 0.88]} />
-          <Surface kind="brass" color="#c9aa76" roughness={0.34} metalness={0.48} />
-        </mesh>
-      ))}
-    </group>
-  );
-}
-
-function LobbyLounge() {
-  return (
-    <group>
-      <Sofa position={[-2.05, 0, 1.55]} rotation={Math.PI} />
-      <Sofa position={[2.05, 0, 1.55]} rotation={Math.PI} />
-      <RoundedBox position={[0, 0.43, 0.52]} args={[1.72, 0.13, 0.86]} radius={0.055} smoothness={4} castShadow receiveShadow>
-        <Surface kind="walnut" color="#553218" roughness={0.43} />
-      </RoundedBox>
-      {[-0.68, 0.68].flatMap((x) =>
-        [-0.25, 0.25].map((z) => (
-          <mesh key={`${x}-${z}`} position={[x, 0.2, 0.52 + z]} castShadow>
-            <cylinderGeometry args={[0.026, 0.03, 0.38, 10]} />
-            <Surface kind="walnut" color="#74583d" roughness={0.4} metalness={0.22} />
-          </mesh>
-        )),
-      )}
-      <mesh position={[0, 0.52, 0.52]}>
-        <cylinderGeometry args={[0.16, 0.16, 0.025, 24]} />
-        <Surface kind="ceramic" physical color="#e8e0d1" roughness={0.22} />
-      </mesh>
-      <mesh position={[0, 0.56, 0.52]}>
-        <sphereGeometry args={[0.07, 16, 12]} />
-        <Surface kind="walnut" color="#c08a5a" roughness={0.48} />
-      </mesh>
-      <UpholsteredChair position={[-0.1, 0, 3.25]} rotation={Math.PI} />
-      <UpholsteredChair position={[0.1, 0, -0.5]} rotation={0} />
-    </group>
-  );
-}
-
-function LobbyArtwork() {
-  const paintings = [
-    { x: -4.15, base: "#d8cbb5", accent: "#6d7965", secondary: "#b98970" },
-    { x: 4.15, base: "#e1d4c0", accent: "#65766c", secondary: "#b58362" },
-  ];
-
-  return (
-    <group>
-      {paintings.map(({ x, base, accent, secondary }, index) => (
-        <group key={x} position={[x, 1.96, -4.31]}>
-          <mesh castShadow>
-            <bevelBoxGeometry args={[1.34, 1.68, 0.13]} />
-            <Surface kind="walnut" color="#331c0d" roughness={0.46} />
-          </mesh>
-          <mesh position={[0, 0, 0.073]}>
-            <bevelBoxGeometry args={[1.2, 1.54, 0.025]} />
-            <Surface kind="satin" color="#d4bd96" roughness={0.38} metalness={0.26} />
-          </mesh>
-          <mesh position={[0, 0, 0.092]}>
-            <bevelBoxGeometry args={[1.12, 1.46, 0.025]} />
-            <Surface kind="linen" color={base} roughness={0.91} />
-          </mesh>
-          <mesh position={[-0.2, -0.16, 0.113]} rotation={[0, 0, index ? 0.27 : -0.2]} scale={[0.25, 0.61, 0.025]}>
-            <sphereGeometry args={[1, 20, 16]} />
-            <Surface kind="linen" color={accent} roughness={0.92} />
-          </mesh>
-          <mesh position={[0.23, 0.18, 0.12]} rotation={[0, 0, index ? -0.58 : 0.48]} scale={[0.22, 0.43, 0.025]}>
-            <sphereGeometry args={[1, 20, 16]} />
-            <Surface kind="linen" color={secondary} roughness={0.88} />
-          </mesh>
-          <mesh position={[0.05, -0.34, 0.125]} rotation={[0, 0, -0.12]}>
-            <bevelBoxGeometry args={[0.72, 0.055, 0.018]} />
-            <Surface kind="walnut" color="#8f7758" roughness={0.84} />
-          </mesh>
-          <mesh position={[0, 0.65, 0.12]}>
-            <bevelBoxGeometry args={[0.66, 0.018, 0.018]} />
-            <Surface kind="brass" color="#b6925e" roughness={0.35} metalness={0.48} />
-          </mesh>
-          <mesh position={[0, 1.02, 0.12]}>
-            <bevelBoxGeometry args={[0.38, 0.08, 0.12]} />
-            <Surface kind="brass" color="#ab8d62" roughness={0.36} metalness={0.48} />
-          </mesh>
-          <pointLight position={[0, 0.88, 0.45]} intensity={0.75} distance={2.2} color="#ffe4ba" />
-        </group>
-      ))}
-    </group>
-  );
-}
-
-function LobbyFloorDetails() {
-  return (
-    <group>
-      <mesh position={[0, 0.075, 1.38]} receiveShadow>
-        <bevelBoxGeometry args={[6.35, 0.045, 3.72]} />
-        <Surface kind="rug" color="#79654b" roughness={0.98} />
-      </mesh>
-      <mesh position={[0, 0.101, 1.38]}>
-        <bevelBoxGeometry args={[6.12, 0.012, 3.49]} />
-        <Surface kind="fabric" color="#c7b390" roughness={0.88} />
-      </mesh>
-      <mesh position={[0, 0.11, 1.38]}>
-        <bevelBoxGeometry args={[5.98, 0.012, 3.35]} />
-        <Surface kind="rug" color="#857155" roughness={0.98} />
-      </mesh>
-      {[-2.91, 2.91].map((x) => (
-        <mesh key={x} position={[x, 0.12, 1.38]}>
-          <bevelBoxGeometry args={[0.018, 0.01, 3.18]} />
-          <Surface kind="brass" color="#d7bb88" roughness={0.35} metalness={0.3} />
-        </mesh>
-      ))}
-    </group>
-  );
-}
-
-function LobbyLighting() {
-  return (
-    <group>
-      <mesh position={[0, 3.05, 0.35]}>
-        <cylinderGeometry args={[0.025, 0.025, 0.32, 12]} />
-        <Surface kind="brass" color="#b18c57" roughness={0.28} metalness={0.72} />
-      </mesh>
-      <mesh position={[0, 2.86, 0.35]}>
-        <sphereGeometry args={[0.18, 24, 16]} />
-        <Surface kind="brass" physical color="#c5a36d" roughness={0.22} metalness={0.62} />
-      </mesh>
-      {Array.from({ length: 6 }, (_, index) => {
-        const angle = (index / 6) * Math.PI * 2;
-        const x = Math.cos(angle) * 0.6;
-        const z = 0.35 + Math.sin(angle) * 0.6;
-        return (
-          <group key={index} position={[x, 2.76, z]}>
-            <mesh position={[0, 0.12, 0]}>
-              <cylinderGeometry args={[0.012, 0.012, 0.28, 8]} />
-              <Surface kind="brass" color="#bd9b68" roughness={0.3} metalness={0.65} />
-            </mesh>
-            <mesh position={[0, -0.04, 0]}>
-              <sphereGeometry args={[0.12, 18, 14]} />
-              <meshPhysicalMaterial color="#fff1d2" emissive="#d7ae6d" emissiveIntensity={0.38} roughness={0.2} />
-            </mesh>
-          </group>
-        );
-      })}
-      <pointLight position={[0, 2.8, 0.35]} intensity={3.5} distance={6.5} color="#ffdfae" />
-      <pointLight position={[0, 2.45, -2.4]} intensity={2.2} distance={4.5} color="#ffe8c8" />
-    </group>
-  );
-}
-
 function WritingDesk() {
   return (
     <group>
@@ -1148,7 +964,7 @@ function FeatureObject({
 }) {
   const indicatorPositions: Record<string, [number, number, number]> = {
     "reception-desk": [0, 0, -1.8],
-    "lobby-lounge": [0, 0, 1.25],
+    "lobby-lounge": LOUNGE_CENTER,
     "reception-flowers": [0, 0, -1.8],
     "lobby-artwork": [0, 0, -4.25],
     bathroom: [4.1, 0, -2.8],
@@ -1177,29 +993,35 @@ function FeatureObject({
   if (feature.id === "reception-desk") {
     return (
       <Interactive {...interactive}>
-        <ReceptionDesk />
+        <Suspense fallback={null}>
+          <ReceptionDesk />
+        </Suspense>
       </Interactive>
     );
   }
   if (feature.id === "lobby-lounge") {
     return (
       <Interactive {...interactive}>
-        <LobbyLounge />
+        <Suspense fallback={null}>
+          <LobbyLounge />
+        </Suspense>
       </Interactive>
     );
   }
   if (feature.id === "reception-flowers") {
     return (
       <Interactive {...interactive}>
-        <FloralArrangement position={[-1.12, 1.48, -1.8]} scale={0.78} />
-        <FloralArrangement position={[1.12, 1.48, -1.8]} scale={0.78} />
+        <FloralArrangement position={[-1.15, 1.125 - 0.2 * 0.72, -1.78]} scale={0.72} />
+        <FloralArrangement position={[1.15, 1.125 - 0.2 * 0.72, -1.78]} scale={0.72} />
       </Interactive>
     );
   }
   if (feature.id === "lobby-artwork") {
     return (
       <Interactive {...interactive}>
-        <LobbyArtwork />
+        <Suspense fallback={null}>
+          <LobbyArtwork />
+        </Suspense>
       </Interactive>
     );
   }
@@ -1414,7 +1236,11 @@ function InteriorRoom({
   const features = FEATURES[floor.id] ?? FEATURES[0];
   const isLobby = floor.id === 0;
   useEffect(() => {
-    if (isLobby) return;
+    if (isLobby) {
+      preloadModels(["loungeChair", "ottoman", "mediaCabinet", "pendant", "plant", "vaseRound", "vaseTall"]);
+      preloadPBR(["walnut", "wool"]);
+      return;
+    }
     preloadModels(["loungeChair", "deskChair", "ottoman", "pendant", "plant", "vaseRound", "vaseTall", "photoFrame"]);
     preloadPBR(["parquet", "wool", "walnut"]);
   }, [isLobby]);
@@ -1453,7 +1279,7 @@ function InteriorRoom({
     onFeatureSelect(feature);
     const focusPoints: Record<string, [number, number, number]> = {
       "reception-desk": [0, 1.05, -1.75],
-      "lobby-lounge": [0, 1.05, 1.15],
+      "lobby-lounge": [LOUNGE_CENTER[0], 1.05, LOUNGE_CENTER[2]],
       "reception-flowers": [0, 1.7, -1.7],
       "lobby-artwork": [0, 1.95, -4.1],
       lounge: [1.8, 0.95, 0.15],
@@ -1505,13 +1331,16 @@ function InteriorRoom({
         <Lightformer form="rect" intensity={1.8} position={[5, 4, -4]} scale={[6, 4, 1]} color="#f0d7b0" />
         <Lightformer form="rect" intensity={1.5} position={[0, 6, 0]} scale={[10, 0.6, 1]} color="#fff3dc" />
       </Environment>
-      <RoomShell bedroomWindow={!isLobby} />
+      <RoomShell residence={!isLobby} />
       {isLobby ? (
         <>
-          <LobbyFloorDetails />
+          <Suspense fallback={null}>
+            <LobbyArchitecture />
+          </Suspense>
           <LobbyLighting />
-          <Plant position={[-5.05, 0.08, -2.55]} />
-          <Plant position={[5.05, 0.08, -2.55]} />
+          <Suspense fallback={null}>
+            <LobbyDecor />
+          </Suspense>
         </>
       ) : (
         <>
