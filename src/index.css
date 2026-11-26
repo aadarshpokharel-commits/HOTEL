@@ -239,7 +239,8 @@ a:focus-visible {
   padding: 7px 11px;
   border: 1px solid rgba(239, 192, 123, 0.72);
   border-radius: 999px;
-  color: #ffffff;
+  background: #d6d6d6;
+  color: #916016;
 }
 
 .eyebrow {
