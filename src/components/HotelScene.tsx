@@ -26,7 +26,7 @@ type HotelSceneProps = {
   controlsLocked: boolean;
 };
 
-const GOLD = "#c8aa79";
+const GOLD = "#efc07b";
 const noRaycast = () => null;
 
 /** Renders merged architecture: one mesh per material key. */
@@ -269,8 +269,8 @@ export default function HotelScene({
       onPointerMissed={() => undefined}
       onDoubleClick={() => onFocusBuilding()}
     >
-      <color attach="background" args={["#111312"]} />
-      <fog attach="fog" args={["#111312", 18, 32]} />
+      <color attach="background" args={["#000000"]} />
+      <fog attach="fog" args={["#000000", 18, 32]} />
       <ambientLight intensity={0.5} />
       <hemisphereLight args={["#e2ddcf", "#373027", 1.15]} />
       <directionalLight

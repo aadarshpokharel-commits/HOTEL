@@ -1481,8 +1481,8 @@ function InteriorRoom({
 
   return (
     <>
-      <color attach="background" args={["#22241f"]} />
-      <fog attach="fog" args={["#22241f", isMobile ? 24 : 15, isMobile ? 48 : 28]} />
+      <color attach="background" args={["#000000"]} />
+      <fog attach="fog" args={["#000000", isMobile ? 24 : 15, isMobile ? 48 : 28]} />
       <ambientLight intensity={isMobile ? 0.9 : 0.58} color="#fff4df" />
       <hemisphereLight args={["#f2e7d2", "#625747", isMobile ? 1.2 : 0.9]} />
       <directionalLight
