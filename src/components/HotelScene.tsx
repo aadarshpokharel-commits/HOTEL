@@ -369,7 +369,7 @@ function FloorLevel({
         outlineColor="#24231f"
         raycast={() => null}
       >
-        {String(floor.id === 0 ? "G" : floor.id).padStart(2, "0")}
+        {floor.id === 0 ? "G" : String(floor.id).padStart(2, "0")}
       </Text>
     </group>
   );

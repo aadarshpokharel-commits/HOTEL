@@ -123,13 +123,26 @@ function Interactive({
   const handlePointer = (event: ThreeEvent<PointerEvent>) => {
     event.stopPropagation();
     setHovered(true);
-    document.body.style.cursor = "pointer";
   };
   const handlePointerOut = (event: ThreeEvent<PointerEvent>) => {
     event.stopPropagation();
     setHovered(false);
-    document.body.style.cursor = "";
   };
+
+  // Tie the pointer cursor to hover state so it is also restored when this
+  // object unmounts mid-hover (floor change, reset, leaving the interior).
+  useEffect(() => {
+    if (!hovered) return;
+    document.body.style.cursor = "pointer";
+    return () => {
+      document.body.style.cursor = "";
+    };
+  }, [hovered]);
+
+  // Scale around the object's own footprint rather than the room origin,
+  // so hovered furniture grows in place instead of sliding sideways.
+  const [pivotX, , pivotZ] = indicatorPosition;
+  const highlighted = hovered || active;
 
   return (
     <group
@@ -139,11 +152,12 @@ function Interactive({
       }}
       onPointerOver={handlePointer}
       onPointerOut={handlePointerOut}
-      scale={hovered || active ? 1.025 : 1}
     >
-      {children}
-      {(hovered || active) && (
-        <mesh position={[indicatorPosition[0], 0.045, indicatorPosition[2]]} rotation={[-Math.PI / 2, 0, 0]} raycast={() => null}>
+      <group position={[pivotX, 0, pivotZ]} scale={highlighted ? 1.025 : 1}>
+        <group position={[-pivotX, 0, -pivotZ]}>{children}</group>
+      </group>
+      {highlighted && (
+        <mesh position={[pivotX, 0.045, pivotZ]} rotation={[-Math.PI / 2, 0, 0]} raycast={() => null}>
           <ringGeometry args={[0.48, 0.51, 40]} />
           <meshBasicMaterial
             color="#d5b987"
@@ -1807,7 +1821,7 @@ export default function InteriorScene({
 
   useEffect(() => {
     setSelectedFeature(null);
-  }, [floor.id]);
+  }, [floor.id, resetSignal]);
 
   const handleFeatureSelect = (feature: InteriorFeature) => {
     setSelectedFeature(feature.id);
