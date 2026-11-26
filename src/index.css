@@ -749,18 +749,43 @@ a:focus-visible {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 9px 12px;
-  border: 1px solid rgba(229, 224, 213, 0.2);
-  border-radius: 2px;
-  background: rgba(22, 33, 62, 0.7);
+  padding: 9px 16px 9px 12px;
+  border: 1px solid rgba(239, 192, 123, 0.32);
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 55%),
+    linear-gradient(135deg, rgba(28, 41, 74, 0.86), rgba(15, 25, 48, 0.9));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 8px 22px rgba(0, 0, 0, 0.28);
   color: #ebe4d7;
   font-size: 9px;
-  backdrop-filter: blur(12px);
+  letter-spacing: 0.04em;
+  backdrop-filter: blur(12px) saturate(120%);
+  transition: border-color 180ms ease, color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.interior-reset svg {
+  color: var(--gold);
+  transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .interior-reset:hover {
-  border-color: rgba(239, 192, 123, 0.62);
+  border-color: rgba(239, 192, 123, 0.7);
   color: #f4dfbd;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 0 0 4px rgba(239, 192, 123, 0.08),
+    0 10px 26px rgba(0, 0, 0, 0.32);
+}
+
+.interior-reset:hover svg {
+  transform: rotate(-180deg);
+}
+
+.interior-reset:active,
+.back-building:active {
+  transform: scale(0.96);
 }
 
 .index-divider {
@@ -1185,17 +1210,36 @@ a:focus-visible {
     display: none;
   }
 
+  /* Floor title: a rounded glass pill with a glowing gold accent dot. */
   .interior-copy {
     top: 3.5%;
     left: 4%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
     width: auto;
-    max-width: 76%;
-    padding: 8px 12px;
-    border: 1px solid rgba(239, 192, 123, 0.24);
-    border-radius: 4px;
-    background: rgba(22, 33, 62, 0.82);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.16);
-    backdrop-filter: blur(10px) saturate(115%);
+    max-width: calc(92% - 54px);
+    min-height: 44px;
+    padding: 7px 18px 7px 14px;
+    border: 1px solid rgba(239, 192, 123, 0.3);
+    border-radius: 999px;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0) 60%),
+      linear-gradient(135deg, rgba(28, 41, 74, 0.88), rgba(15, 25, 48, 0.92));
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      0 8px 22px rgba(0, 0, 0, 0.26);
+    backdrop-filter: blur(12px) saturate(120%);
+  }
+
+  .interior-copy::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    background: var(--gold);
+    box-shadow: 0 0 0 3px rgba(239, 192, 123, 0.16), 0 0 10px rgba(239, 192, 123, 0.5);
   }
 
   .interior-copy .eyebrow,
@@ -1205,26 +1249,37 @@ a:focus-visible {
   }
 
   .interior-copy h1 {
+    overflow: hidden;
     margin: 0;
-    font-size: clamp(20px, 6vw, 25px);
+    font-size: clamp(19px, 5.6vw, 23px);
     line-height: 1.15;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .feature-card {
     display: none;
   }
 
+  /* Reset: a glass circle matching the title pill. */
   .interior-reset {
-    top: 3%;
+    top: 3.5%;
     right: 4%;
-    width: 40px;
-    height: 40px;
-    min-height: 40px;
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
     justify-content: center;
+    gap: 0;
     padding: 0;
-    border-color: rgba(235, 230, 217, 0.32);
-    background: rgba(22, 33, 62, 0.94);
+    border-radius: 50%;
     font-size: 0;
+  }
+
+  .interior-reset svg {
+    display: block;
+    width: 17px;
+    height: 17px;
+    flex: 0 0 auto;
   }
 
   .interior-bottom-controls {
@@ -1247,9 +1302,11 @@ a:focus-visible {
     min-width: 0;
     flex: 1;
     padding: 8px 8px 6px;
-    border: 1px solid rgba(235, 230, 217, 0.28);
-    border-radius: 4px;
-    background: rgba(22, 33, 62, 0.94);
+    border: 1px solid rgba(239, 192, 123, 0.24);
+    border-radius: 18px;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0) 50%),
+      linear-gradient(135deg, rgba(28, 41, 74, 0.9), rgba(15, 25, 48, 0.94));
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
     transform: none;
     backdrop-filter: blur(12px) saturate(120%);
@@ -1283,6 +1340,7 @@ a:focus-visible {
   }
 
   .floor-rail--compact .rail-item {
+    border-radius: 12px;
     min-width: 54px;
     min-height: 44px;
     flex: 1 1 54px;
@@ -1305,27 +1363,45 @@ a:focus-visible {
     background: rgba(15, 52, 96, 0.55);
   }
 
+  /* Compact icon-only back button, first (leftmost) in the bottom row. The
+     label stays in the DOM for screen readers. */
   .back-building {
     position: relative;
     bottom: auto;
     left: auto;
-    min-height: 42px;
+    order: -1;
+    width: 44px;
+    height: 44px;
     flex: 0 0 auto;
     justify-content: center;
-    gap: 9px;
-    padding: 0 13px 0 4px;
-    border: 1px solid rgba(235, 230, 217, 0.24);
-    border-radius: 24px;
-    background: rgba(22, 33, 62, 0.94);
-    color: #eee8dc;
-    font-size: 10px;
-    backdrop-filter: blur(12px);
+    gap: 0;
+    padding: 0;
+    border: 1px solid rgba(239, 192, 123, 0.32);
+    border-radius: 50%;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 55%),
+      linear-gradient(135deg, rgba(28, 41, 74, 0.9), rgba(15, 25, 48, 0.94));
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      0 8px 22px rgba(0, 0, 0, 0.28);
+    color: var(--gold);
+    backdrop-filter: blur(12px) saturate(120%);
+    transition: transform 180ms ease, border-color 180ms ease;
+  }
+
+  .back-building > span:last-child {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
   }
 
   .back-building-icon {
-    width: 32px;
-    height: 32px;
-    border-color: rgba(231, 224, 210, 0.48);
+    width: auto;
+    height: auto;
+    border: 0;
   }
 
   .interior-reset,
