@@ -18,7 +18,9 @@ export type SurfaceKind =
   | "brass"
   | "satin"
   | "ceramic"
-  | "foliage";
+  | "foliage"
+  | "travertine"
+  | "concrete";
 
 type Fields = {
   height: Float32Array;
@@ -57,6 +59,53 @@ function setGrey(f: Fields, i: number, a: number) {
 }
 
 const SPECS: Record<SurfaceKind, SurfaceSpec> = {
+  travertine: {
+    size: 512,
+    tile: 1.2,
+    bump: 2.2,
+    generate(u, v, i, f) {
+      // Vein-cut travertine: horizontal bedding bands with elongated pores.
+      const band = fbm(u, v, 2, 18, 4, 121);
+      const fineBand = fbm(u, v, 3, 56, 3, 122);
+      const poreNoise = valueNoise(u * 28, v * 176, 28, 176, 123);
+      const pore = poreNoise > 0.8 ? smoothstep(0.8, 0.93, poreNoise) : 0;
+      const cloud = fbm(u, v, 4, 4, 3, 124);
+      f.height[i] = band * 0.28 + fineBand * 0.18 - pore * 0.75;
+      const a =
+        0.89 + (band - 0.5) * 0.2 + (fineBand - 0.5) * 0.08 + (cloud - 0.5) * 0.06 - pore * 0.2;
+      setRGB(f, i, a, Math.pow(Math.max(0, a), 1.04), Math.pow(Math.max(0, a), 1.13));
+      f.rough[i] = 0.8 + fineBand * 0.14 + pore * 0.18;
+    },
+  },
+  concrete: {
+    size: 512,
+    tile: 2.4,
+    bump: 1.7,
+    generate(u, v, i, f) {
+      // Board-formed architectural concrete: vertical board strips, seams,
+      // pinholes, mottling and a regular grid of formwork tie holes.
+      const boards = 8;
+      const su = u * boards;
+      const board = Math.floor(su);
+      const fu = su - board;
+      const boardTone = (hash2(board, 5) - 0.5) * 0.06;
+      const seam = 1 - smoothstep(0.004, 0.012, Math.min(fu, 1 - fu) / boards);
+      const grain = fbm(u, v, 3, 40, 3, 131);
+      const mottle = fbm(u, v, 4, 4, 4, 132);
+      const pinNoise = valueNoise(u * 160, v * 160, 160, 160, 133);
+      const pin = pinNoise > 0.9 ? (pinNoise - 0.9) / 0.1 : 0;
+      const tu = (u * 2) % 1;
+      const tv = (v * 2) % 1;
+      const tie = 1 - smoothstep(0.008, 0.014, Math.hypot(tu - 0.5, tv - 0.5) / 2);
+      f.height[i] = mottle * 0.2 + grain * 0.18 - seam * 0.45 - pin * 0.5 - tie * 0.9;
+      setGrey(
+        f,
+        i,
+        0.9 + (mottle - 0.5) * 0.12 + (grain - 0.5) * 0.05 + boardTone - seam * 0.1 - pin * 0.2 - tie * 0.35,
+      );
+      f.rough[i] = 0.86 + grain * 0.12 + tie * 0.1;
+    },
+  },
   limestone: {
     size: 512,
     tile: 1.6,
@@ -467,6 +516,11 @@ export function projectSurfaceUVs(mesh: THREE.Mesh) {
   const offset = (parseInt(mesh.uuid.replace(/-/g, "").slice(0, 6), 16) % 997) / 97;
   const p = geometry.parameters ?? {};
   const s = mesh.scale;
+  // Deformed procedural shapes (drapes, pillows) opt in to box projection.
+  if (geometry.userData.boxUV) {
+    boxProject(geometry, s, offset);
+    return;
+  }
   switch (geometry.type) {
     case "CylinderGeometry": {
       const radius = ((p.radiusTop ?? 1) + (p.radiusBottom ?? 1)) / 2;

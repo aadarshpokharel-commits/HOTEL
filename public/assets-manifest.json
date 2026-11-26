@@ -1,0 +1,415 @@
+{
+  "note": "Third-party assets used by Aurelia. All are CC0 (public domain); attribution is not required but recorded here. Files are compressed derivatives (meshopt geometry, WebP textures; .mobile variants at 512 px).",
+  "assets": [
+    {
+      "id": "mid_century_lounge_chair",
+      "name": "Mid Century Lounge Chair",
+      "type": "model",
+      "source": "https://polyhaven.com/a/mid_century_lounge_chair",
+      "authors": [
+        "Kuutti Siitonen"
+      ],
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "originalResolution": "1k",
+      "originalBytes": 2087019,
+      "downloaded": "2026-11-26",
+      "files": [
+        {
+          "path": "/models/furniture/mid_century_lounge_chair.glb",
+          "bytes": 292748
+        },
+        {
+          "path": "/models/furniture/mid_century_lounge_chair.mobile.glb",
+          "bytes": 121968
+        }
+      ]
+    },
+    {
+      "id": "modern_arm_chair_01",
+      "name": "Modern Arm Chair 01",
+      "type": "model",
+      "source": "https://polyhaven.com/a/modern_arm_chair_01",
+      "authors": [
+        "Vibrant Nordic"
+      ],
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "originalResolution": "1k",
+      "originalBytes": 2698032,
+      "downloaded": "2026-11-26",
+      "files": [
+        {
+          "path": "/models/furniture/modern_arm_chair_01.glb",
+          "bytes": 315264
+        },
+        {
+          "path": "/models/furniture/modern_arm_chair_01.mobile.glb",
+          "bytes": 139016
+        }
+      ]
+    },
+    {
+      "id": "Ottoman_01",
+      "name": "Ottoman 01",
+      "type": "model",
+      "source": "https://polyhaven.com/a/Ottoman_01",
+      "authors": [
+        "Caspian Fortune"
+      ],
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "originalResolution": "1k",
+      "originalBytes": 652112,
+      "downloaded": "2026-11-26",
+      "files": [
+        {
+          "path": "/models/furniture/ottoman_01.glb",
+          "bytes": 318428
+        },
+        {
+          "path": "/models/furniture/ottoman_01.mobile.glb",
+          "bytes": 97128
+        }
+      ]
+    },
+    {
+      "id": "modern_wooden_cabinet",
+      "name": "Modern Wooden Cabinet",
+      "type": "model",
+      "source": "https://polyhaven.com/a/modern_wooden_cabinet",
+      "authors": [
+        "Patrik Pangerl"
+      ],
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "originalResolution": "1k",
+      "originalBytes": 2855522,
+      "downloaded": "2026-11-26",
+      "files": [
+        {
+          "path": "/models/furniture/modern_wooden_cabinet.glb",
+          "bytes": 425932
+        },
+        {
+          "path": "/models/furniture/modern_wooden_cabinet.mobile.glb",
+          "bytes": 297476
+        }
+      ]
+    },
+    {
+      "id": "modern_ceiling_lamp_01",
+      "name": "Modern Ceiling Lamp 01",
+      "type": "model",
+      "source": "https://polyhaven.com/a/modern_ceiling_lamp_01",
+      "authors": [
+        "James Ray Cock"
+      ],
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "originalResolution": "1k",
+      "originalBytes": 436065,
+      "downloaded": "2026-11-26",
+      "files": [
+        {
+          "path": "/models/lighting/modern_ceiling_lamp_01.glb",
+          "bytes": 157440
+        },
+        {
+          "path": "/models/lighting/modern_ceiling_lamp_01.mobile.glb",
+          "bytes": 81904
+        }
+      ]
+    },
+    {
+      "id": "potted_plant_02",
+      "name": "Potted Plant 02",
+      "type": "model",
+      "source": "https://polyhaven.com/a/potted_plant_02",
+      "authors": [
+        "Rico Cilliers"
+      ],
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "originalResolution": "1k",
+      "originalBytes": 2634698,
+      "downloaded": "2026-11-26",
+      "files": [
+        {
+          "path": "/models/decoration/potted_plant_02.glb",
+          "bytes": 888380
+        },
+        {
+          "path": "/models/decoration/potted_plant_02.mobile.glb",
+          "bytes": 627780
+        }
+      ]
+    },
+    {
+      "id": "ceramic_vase_01",
+      "name": "Ceramic Vase 01",
+      "type": "model",
+      "source": "https://polyhaven.com/a/ceramic_vase_01",
+      "authors": [
+        "James Ray Cock"
+      ],
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "originalResolution": "1k",
+      "originalBytes": 418457,
+      "downloaded": "2026-11-26",
+      "files": [
+        {
+          "path": "/models/decoration/ceramic_vase_01.glb",
+          "bytes": 102108
+        },
+        {
+          "path": "/models/decoration/ceramic_vase_01.mobile.glb",
+          "bytes": 81056
+        }
+      ]
+    },
+    {
+      "id": "ceramic_vase_03",
+      "name": "Ceramic Vase 03",
+      "type": "model",
+      "source": "https://polyhaven.com/a/ceramic_vase_03",
+      "authors": [
+        "James Ray Cock"
+      ],
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "originalResolution": "1k",
+      "originalBytes": 765159,
+      "downloaded": "2026-11-26",
+      "files": [
+        {
+          "path": "/models/decoration/ceramic_vase_03.glb",
+          "bytes": 289012
+        },
+        {
+          "path": "/models/decoration/ceramic_vase_03.mobile.glb",
+          "bytes": 111224
+        }
+      ]
+    },
+    {
+      "id": "standing_picture_frame_01",
+      "name": "Standing Picture Frame 01",
+      "type": "model",
+      "source": "https://polyhaven.com/a/standing_picture_frame_01",
+      "authors": [
+        "James Ray Cock"
+      ],
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "originalResolution": "1k",
+      "originalBytes": 447425,
+      "downloaded": "2026-11-26",
+      "files": [
+        {
+          "path": "/models/decoration/standing_picture_frame_01.glb",
+          "bytes": 142628
+        },
+        {
+          "path": "/models/decoration/standing_picture_frame_01.mobile.glb",
+          "bytes": 58176
+        }
+      ]
+    },
+    {
+      "id": "herringbone_parquet",
+      "name": "Herringbone Parquet",
+      "type": "texture",
+      "source": "https://polyhaven.com/a/herringbone_parquet",
+      "authors": [
+        "Jenelle van Heerden",
+        "Sergej Majboroda"
+      ],
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "originalResolution": "1k",
+      "originalBytes": 2112167,
+      "downloaded": "2026-11-26",
+      "files": [
+        {
+          "path": "/textures/wood/herringbone_parquet/ao.mobile.webp",
+          "bytes": 2728
+        },
+        {
+          "path": "/textures/wood/herringbone_parquet/ao.webp",
+          "bytes": 23598
+        },
+        {
+          "path": "/textures/wood/herringbone_parquet/diff.mobile.webp",
+          "bytes": 32588
+        },
+        {
+          "path": "/textures/wood/herringbone_parquet/diff.webp",
+          "bytes": 166064
+        },
+        {
+          "path": "/textures/wood/herringbone_parquet/nor_gl.mobile.webp",
+          "bytes": 1700
+        },
+        {
+          "path": "/textures/wood/herringbone_parquet/nor_gl.webp",
+          "bytes": 9408
+        },
+        {
+          "path": "/textures/wood/herringbone_parquet/rough.mobile.webp",
+          "bytes": 8084
+        },
+        {
+          "path": "/textures/wood/herringbone_parquet/rough.webp",
+          "bytes": 56700
+        }
+      ]
+    },
+    {
+      "id": "plastered_wall_04",
+      "name": "Plastered Wall 04",
+      "type": "texture",
+      "source": "https://polyhaven.com/a/plastered_wall_04",
+      "authors": [
+        "Rob Tuytel"
+      ],
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "originalResolution": "1k",
+      "originalBytes": 982269,
+      "downloaded": "2026-11-26",
+      "files": [
+        {
+          "path": "/textures/plaster/plastered_wall_04/ao.mobile.webp",
+          "bytes": 528
+        },
+        {
+          "path": "/textures/plaster/plastered_wall_04/ao.webp",
+          "bytes": 1926
+        },
+        {
+          "path": "/textures/plaster/plastered_wall_04/diff.mobile.webp",
+          "bytes": 2094
+        },
+        {
+          "path": "/textures/plaster/plastered_wall_04/diff.webp",
+          "bytes": 7540
+        },
+        {
+          "path": "/textures/plaster/plastered_wall_04/nor_gl.mobile.webp",
+          "bytes": 1514
+        },
+        {
+          "path": "/textures/plaster/plastered_wall_04/nor_gl.webp",
+          "bytes": 7848
+        },
+        {
+          "path": "/textures/plaster/plastered_wall_04/rough.mobile.webp",
+          "bytes": 1276
+        },
+        {
+          "path": "/textures/plaster/plastered_wall_04/rough.webp",
+          "bytes": 4618
+        }
+      ]
+    },
+    {
+      "id": "poly_wool_herringbone",
+      "name": "Poly Wool Herringbone",
+      "type": "texture",
+      "source": "https://polyhaven.com/a/poly_wool_herringbone",
+      "authors": [
+        "colormass",
+        "Rico Cilliers"
+      ],
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "originalResolution": "1k",
+      "originalBytes": 3776614,
+      "downloaded": "2026-11-26",
+      "files": [
+        {
+          "path": "/textures/fabric/poly_wool_herringbone/ao.mobile.webp",
+          "bytes": 72770
+        },
+        {
+          "path": "/textures/fabric/poly_wool_herringbone/ao.webp",
+          "bytes": 336460
+        },
+        {
+          "path": "/textures/fabric/poly_wool_herringbone/diff.mobile.webp",
+          "bytes": 49828
+        },
+        {
+          "path": "/textures/fabric/poly_wool_herringbone/diff.webp",
+          "bytes": 272714
+        },
+        {
+          "path": "/textures/fabric/poly_wool_herringbone/nor_gl.mobile.webp",
+          "bytes": 32302
+        },
+        {
+          "path": "/textures/fabric/poly_wool_herringbone/nor_gl.webp",
+          "bytes": 276410
+        },
+        {
+          "path": "/textures/fabric/poly_wool_herringbone/rough.mobile.webp",
+          "bytes": 46554
+        },
+        {
+          "path": "/textures/fabric/poly_wool_herringbone/rough.webp",
+          "bytes": 307662
+        }
+      ]
+    },
+    {
+      "id": "american_walnut_veneer",
+      "name": "American Walnut Veneer",
+      "type": "texture",
+      "source": "https://polyhaven.com/a/american_walnut_veneer",
+      "authors": [
+        "Jenelle van Heerden"
+      ],
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "originalResolution": "1k",
+      "originalBytes": 2333727,
+      "downloaded": "2026-11-26",
+      "files": [
+        {
+          "path": "/textures/wood/american_walnut_veneer/ao.mobile.webp",
+          "bytes": 26672
+        },
+        {
+          "path": "/textures/wood/american_walnut_veneer/ao.webp",
+          "bytes": 151766
+        },
+        {
+          "path": "/textures/wood/american_walnut_veneer/diff.mobile.webp",
+          "bytes": 11734
+        },
+        {
+          "path": "/textures/wood/american_walnut_veneer/diff.webp",
+          "bytes": 80736
+        },
+        {
+          "path": "/textures/wood/american_walnut_veneer/nor_gl.mobile.webp",
+          "bytes": 1350
+        },
+        {
+          "path": "/textures/wood/american_walnut_veneer/nor_gl.webp",
+          "bytes": 10574
+        },
+        {
+          "path": "/textures/wood/american_walnut_veneer/rough.mobile.webp",
+          "bytes": 33758
+        },
+        {
+          "path": "/textures/wood/american_walnut_veneer/rough.webp",
+          "bytes": 192678
+        }
+      ]
+    }
+  ]
+}
