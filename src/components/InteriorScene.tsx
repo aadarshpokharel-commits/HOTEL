@@ -347,14 +347,20 @@ function BedroomPartition() {
         <bevelBoxGeometry args={[5.02, 0.08, 0.16]} />
         <Surface kind="brass" color="#9e845e" roughness={0.38} metalness={0.42} />
       </mesh>
-      <mesh position={[-1.12, 0.12, -1.98]} rotation={[0, -0.95, 0]} castShadow>
-        <bevelBoxGeometry args={[0.055, 1.48, 0.9]} />
-        <Surface kind="walnut" color="#513219" roughness={0.48} />
-      </mesh>
-      <mesh position={[-1.08, 0.17, -2.38]} rotation={[0, -0.95, 0]}>
-        <bevelBoxGeometry args={[0.045, 0.08, 0.08]} />
-        <Surface kind="brass" color="#a9804e" roughness={0.28} metalness={0.72} />
-      </mesh>
+      {/* Bedroom door: a full-height walnut leaf hinged at the north jamb of
+          the opening (z −2.0 … −1.1), swung open into the bedroom. */}
+      <group position={[-1.05, 0, -1.98]} rotation={[0, -1.15, 0]}>
+        <mesh position={[0, 1.0, 0.44]} castShadow receiveShadow>
+          <bevelBoxGeometry args={[0.045, 2.0, 0.86]} />
+          <Surface kind="walnut" color="#513219" roughness={0.48} />
+        </mesh>
+        {[-1, 1].map((side) => (
+          <mesh key={side} position={[side * 0.04, 1.0, 0.78]} castShadow>
+            <bevelBoxGeometry args={[0.02, 0.32, 0.02]} />
+            <Surface kind="brass" color="#c9a36a" roughness={0.25} metalness={0.9} />
+          </mesh>
+        ))}
+      </group>
       <mesh position={[-5.96, 0.08, -1.78]} receiveShadow>
         <bevelBoxGeometry args={[0.08, 0.16, 4.65]} />
         <Surface kind="walnut" color="#9c886c" roughness={0.5} />

@@ -152,7 +152,10 @@ export function PenthouseLiving() {
       <FireplaceIsland />
       <CurvedSofa center={FIREPLACE} />
       <CoffeeTable position={[cx, 0.03, cz - 0.35]} />
-      <Model name="loungeChair" position={[-1.0, 0.03, 0.15]} rotation={[0, Math.PI / 2 - 0.35, 0]} />
+      {/* West of the fireplace there is no room for a lounge chair between
+          the bedroom partition and the coffee table, so a tall plant fills
+          the corner instead. */}
+      <Model name="plant" position={[-0.55, 0.012, 0.3]} scale={1.15} rotation={[0, 0.7, 0]} />
       <Model name="loungeChair" position={[2.05, 0.03, 0.15]} rotation={[0, -Math.PI / 2 + 0.35, 0]} />
       <Model name="plant" position={[-0.95, 0.012, 3.85]} scale={1.3} rotation={[0, 1, 0]} />
       <Model name="plant" position={[2.6, 0.012, 3.9]} scale={1.2} rotation={[0, 2.4, 0]} />
