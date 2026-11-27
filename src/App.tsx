@@ -10,7 +10,46 @@ import {
 import { useCallback, useEffect, useRef, useState } from "react";
 import InteriorScene, { type InteriorFeature } from "./components/InteriorScene";
 import HotelScene from "./components/HotelScene";
-import { floors, type HotelFloor } from "./data/floors";
+import { floors, formatRate, type FloorRate, type HotelFloor } from "./data/floors";
+
+/**
+ * Nightly price and a "Book now" call to action.
+ *
+ * The button is intentionally inert for now: it renders, hovers and presses
+ * like a live control but does nothing. To connect it later, pass `onBook`
+ * (e.g. navigate to the booking page with the floor id).
+ */
+function BookingPanel({ floor, rate, onBook }: { floor: HotelFloor; rate: FloorRate; onBook?: (floor: HotelFloor) => void }) {
+  return (
+    <motion.aside
+      className="booking-panel"
+      key={`booking-${floor.id}`}
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.45, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+      aria-label={`${floor.name} rate`}
+    >
+      <div className="booking-price">
+        <span className="booking-category">{rate.category}</span>
+        <span className="booking-amount">
+          <span className="booking-from">From</span>
+          <strong>{formatRate(rate)}</strong>
+          <span className="booking-unit">/ night</span>
+        </span>
+        <span className="booking-note">{rate.note}</span>
+      </div>
+      <button
+        type="button"
+        className="booking-button"
+        onClick={onBook ? () => onBook(floor) : undefined}
+        aria-label={`Book ${floor.name}, from ${formatRate(rate)} per night`}
+      >
+        <span>Book now</span>
+        <ArrowRight size={14} strokeWidth={1.8} />
+      </button>
+    </motion.aside>
+  );
+}
 
 function Brand() {
   return (
@@ -91,7 +130,7 @@ function InteriorView({
 
   return (
     <motion.main
-      className="interior-view"
+      className={`interior-view${floor.rate ? " interior-view--bookable" : ""}`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0, scale: 1.025 }}
@@ -171,6 +210,7 @@ function InteriorView({
           <FloorRail activeFloor={floor.id} onSelect={onSelectFloor} compact />
         </div>
       </div>
+      {floor.rate && <BookingPanel floor={floor} rate={floor.rate} />}
       <div className="interior-image-credit">SELECT A DETAIL TO DISCOVER MORE</div>
     </motion.main>
   );
@@ -338,6 +378,11 @@ export default function App() {
                   <span className="selection-card-copy">
                     <span>{previewFloor.level}</span>
                     <strong>{previewFloor.shortName}</strong>
+                    {previewFloor.rate && (
+                      <span className="selection-card-rate">
+                        From <b>{formatRate(previewFloor.rate)}</b> / night
+                      </span>
+                    )}
                   </span>
                   <span className="selection-card-icon"><Sparkles size={14} /></span>
                 </motion.div>
