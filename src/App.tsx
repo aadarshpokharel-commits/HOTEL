@@ -130,7 +130,7 @@ function InteriorView({
 
   return (
     <motion.main
-      className={`interior-view${floor.rate ? " interior-view--bookable" : ""}`}
+      className="interior-view"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0, scale: 1.025 }}
@@ -165,6 +165,9 @@ function InteriorView({
           <span className="instruction-icon"><Compass size={13} /></span>
           <span>DRAG TO EXPLORE <i /> SCROLL TO ZOOM</span>
         </div>
+        {/* The rate belongs to the floor's title: under the copy on desktop,
+            folded into the title card on phones. */}
+        {floor.rate && <BookingPanel floor={floor} rate={floor.rate} />}
       </motion.section>
 
       {selectedFeature && (
@@ -210,7 +213,6 @@ function InteriorView({
           <FloorRail activeFloor={floor.id} onSelect={onSelectFloor} compact />
         </div>
       </div>
-      {floor.rate && <BookingPanel floor={floor} rate={floor.rate} />}
       <div className="interior-image-credit">SELECT A DETAIL TO DISCOVER MORE</div>
     </motion.main>
   );
