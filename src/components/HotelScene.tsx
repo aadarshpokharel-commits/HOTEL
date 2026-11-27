@@ -15,7 +15,7 @@ import {
   buildSite,
   type ExteriorPart,
 } from "./building/architecture";
-import { ExteriorMaterial, SHADOW_PARTS, type LevelState } from "./building/materials";
+import { ExteriorMaterial, SHADOW_PARTS, leafDepthMaterial, type LevelState } from "./building/materials";
 
 type HotelSceneProps = {
   floors: HotelFloor[];
@@ -44,6 +44,7 @@ function MergedParts({ parts, state }: { parts: Map<string, THREE.BufferGeometry
             geometry={geometry}
             castShadow={shadows}
             receiveShadow={shadows}
+            customDepthMaterial={leafDepthMaterial(part)}
             raycast={noRaycast}
           >
             <ExteriorMaterial part={part} state={state} />

@@ -43,6 +43,8 @@ export type ExteriorPart =
   | "foliage"
   | "foliageLight"
   | "foliageShade"
+  | "leafOlive"
+  | "leafBox"
   | "bark"
   | "planter"
   | "paving";
@@ -280,49 +282,133 @@ function guard(b: ArchBuilder, from: [number, number], to: [number, number], y: 
   });
 }
 
+/** Scatter leaf cards over an ellipsoid shell; normals bend away from `centre`. */
+function leafShell(
+  b: ArchBuilder,
+  key: ExteriorPart,
+  centre: Vec3,
+  radii: Vec3,
+  count: number,
+  card: number,
+  seed: number,
+  bendFrom: (p: Vec3) => Vec3 = () => centre,
+) {
+  for (let i = 0; i < count; i += 1) {
+    const r1 = hash2(seed, i * 7 + 1);
+    const r2 = hash2(seed, i * 7 + 2);
+    const r3 = hash2(seed, i * 7 + 3);
+    const theta = r1 * Math.PI * 2;
+    // Bias towards the upper half: crowns are lit and seen from above.
+    const cosPhi = 1 - Math.pow(r2, 0.8) * 1.75;
+    const sinPhi = Math.sqrt(Math.max(0, 1 - cosPhi * cosPhi));
+    const depth = 0.72 + r3 * 0.3;
+    const p: Vec3 = [
+      centre[0] + Math.cos(theta) * sinPhi * radii[0] * depth,
+      centre[1] + cosPhi * radii[1] * depth,
+      centre[2] + Math.sin(theta) * sinPhi * radii[2] * depth,
+    ];
+    const sizeK = 0.8 + hash2(seed, i * 7 + 4) * 0.45;
+    b.card(
+      key,
+      card * sizeK,
+      card * sizeK,
+      p,
+      [
+        (hash2(seed, i * 7 + 5) - 0.5) * Math.PI,
+        theta + (hash2(seed, i * 7 + 6) - 0.5) * 1.6,
+        (hash2(seed, i * 7 + 7) - 0.5) * Math.PI,
+      ],
+      bendFrom(p),
+    );
+  }
+}
+
+/**
+ * Planters with an olive tree (gnarled trunk, splayed branches, a crown of
+ * leaf clusters) or clipped boxwood. Leaves are alpha-cut cards painted with
+ * individual leaves; a dark core keeps the crown from looking see-through.
+ */
 function planter(b: ArchBuilder, position: Vec3, size: Vec3, plants: "shrub" | "tree", seed: number) {
   const [w, h, d] = size;
-  b.box("planter", [w, h, d], [position[0], position[1] + h / 2, position[2]], { bevel: 0.01 });
+  const [x, y, z] = position;
+  b.box("planter", [w, h, d], [x, y + h / 2, z], { bevel: 0.01 });
+  // Soil / mulch top just below the rim.
+  b.box("bark", [w - 0.03, 0.01, d - 0.03], [x, y + h - 0.012, z]);
+  const top = y + h;
+
   if (plants === "tree") {
-    const [x, y, z] = position;
-    const crownY = y + h + 0.5;
-    b.cylinder("bark", 0.022, 0.52, [x, y + h + 0.26, z], { radiusTop: 0.012, segments: 10 });
-    for (let i = 0; i < 5; i += 1) {
-      const angle = (i / 5) * Math.PI * 2 + hash2(seed, i) * 0.45;
-      const branchEnd: Vec3 = [
-        x + Math.cos(angle) * 0.16,
-        y + h + 0.4 + hash2(seed, i + 12) * 0.08,
-        z + Math.sin(angle) * 0.14,
+    const k = w >= 0.4 ? 1.25 : 1;
+    // Gnarled trunk: a few kinked segments that thin as they rise.
+    let prev: Vec3 = [x, top, z];
+    const trunkH = 0.34 * k;
+    for (let i = 1; i <= 4; i += 1) {
+      const t = i / 4;
+      const next: Vec3 = [
+        x + (hash2(seed, i + 60) - 0.5) * 0.05 * k,
+        top + trunkH * t,
+        z + (hash2(seed, i + 70) - 0.5) * 0.05 * k,
       ];
-      b.rod("bark", [x, y + h + 0.29, z], branchEnd, 0.008, 7);
+      b.rod("bark", prev, next, (0.024 - t * 0.008) * k, 9);
+      b.sphere("bark", (0.024 - t * 0.008) * k, next, { segments: 8 });
+      prev = next;
     }
-    b.sphere("foliageShade", 0.13, [x, crownY, z], {
-      scale: [1.2, 0.72, 0.95],
-      segments: 14,
-    });
-    for (let i = 0; i < 11; i += 1) {
-      const angle = (i / 11) * Math.PI * 2 + hash2(seed, i + 20) * 0.5;
-      const radius = 0.07 + hash2(seed, i + 30) * 0.09;
-      const leafSize = 0.09 + hash2(seed, i + 40) * 0.035;
-      const leafY = crownY + (hash2(seed, i + 50) - 0.5) * 0.17;
-      b.sphere(i % 3 === 0 ? "foliageShade" : "foliageLight", leafSize, [
-        x + Math.cos(angle) * radius,
-        leafY,
-        z + Math.sin(angle) * radius * 0.82,
-      ], {
-        scale: [1.3, 0.72, 0.92],
-        segments: 12,
-      });
+    const fork = prev;
+    const crown: Vec3 = [fork[0], fork[1] + 0.16 * k, fork[2]];
+    const clusters = 7;
+    for (let i = 0; i < clusters; i += 1) {
+      const angle = (i / clusters) * Math.PI * 2 + hash2(seed, i) * 0.6;
+      const reach = (0.11 + hash2(seed, i + 12) * 0.07) * k;
+      const lift = (0.08 + hash2(seed, i + 24) * 0.14) * k;
+      const mid: Vec3 = [
+        fork[0] + Math.cos(angle) * reach * 0.5,
+        fork[1] + lift * 0.55,
+        fork[2] + Math.sin(angle) * reach * 0.5,
+      ];
+      const tip: Vec3 = [
+        fork[0] + Math.cos(angle) * reach,
+        fork[1] + lift,
+        fork[2] + Math.sin(angle) * reach,
+      ];
+      b.rod("bark", fork, mid, 0.009 * k, 6);
+      b.rod("bark", mid, tip, 0.006 * k, 6);
+      const cr = (0.08 + hash2(seed, i + 36) * 0.03) * k;
+      b.sphere("foliageShade", cr * 0.42, tip, { scale: [1.2, 0.75, 1.2], segments: 10 });
+      leafShell(b, "leafOlive", tip, [cr * 1.1, cr * 0.8, cr * 1.1], 44, 0.08 * k, seed * 31 + i, () => crown);
     }
+    // Top cluster closes the crown.
+    const cr = 0.1 * k;
+    b.sphere("foliageShade", cr * 0.45, crown, { scale: [1.3, 0.7, 1.3], segments: 12 });
+    leafShell(b, "leafOlive", crown, [cr * 1.3, cr * 0.8, cr * 1.3], 56, 0.09 * k, seed * 31 + 99, () => [
+      crown[0],
+      crown[1] - 0.08 * k,
+      crown[2],
+    ]);
     return;
   }
-  const count = Math.max(2, Math.round(w / 0.14));
-  for (let i = 0; i < count; i += 1) {
-    const sx = -w / 2 + (w / count) * (i + 0.5);
-    b.sphere("foliage", 0.07 + hash2(seed, i) * 0.02, [position[0] + sx, position[1] + h + 0.04, position[2]], {
-      scale: [1.1, 0.75, Math.min(1.2, d / 0.16)],
-      segments: 10,
-    });
+
+  // Clipped boxwood hedge: a dark core with leaf cards over a rounded top.
+  const alongX = w >= d;
+  const length = (alongX ? w : d) - 0.03;
+  const depth = (alongX ? d : w) - 0.02;
+  const hedgeH = 0.1;
+  const cy = top + hedgeH * 0.45;
+  const core: Vec3 = alongX ? [length - 0.02, hedgeH * 0.75, depth * 0.7] : [depth * 0.7, hedgeH * 0.75, length - 0.02];
+  b.box("foliageShade", core, [x, cy, z], { bevel: 0.03 });
+  const radii: Vec3 = alongX
+    ? [length / 2 + 0.01, hedgeH * 0.62, depth / 2 + 0.01]
+    : [depth / 2 + 0.01, hedgeH * 0.62, length / 2 + 0.01];
+  // Normals bend from the hedge's spine, so it shades like a rounded loaf.
+  const spine = (p: Vec3): Vec3 => (alongX ? [p[0], cy - 0.03, z] : [x, cy - 0.03, p[2]]);
+  const count = Math.round((length / 0.03) * 9);
+  // Squash the ellipsoid into a box-like loaf by scattering segments along it.
+  const segs = Math.max(2, Math.round(length / 0.12));
+  for (let s = 0; s < segs; s += 1) {
+    const off = -length / 2 + (length / segs) * (s + 0.5);
+    const c: Vec3 = alongX ? [x + off, cy, z] : [x, cy, z + off];
+    const r: Vec3 = alongX
+      ? [length / segs / 2 + 0.03, radii[1], radii[2]]
+      : [radii[0], radii[1], length / segs / 2 + 0.03];
+    leafShell(b, "leafBox", c, r, Math.round(count / segs), 0.07, seed * 17 + s, spine);
   }
 }
 

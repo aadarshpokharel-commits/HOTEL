@@ -20,7 +20,9 @@ export type SurfaceKind =
   | "ceramic"
   | "foliage"
   | "travertine"
-  | "concrete";
+  | "concrete"
+  | "travertineCladding"
+  | "stonePaving";
 
 type Fields = {
   height: Float32Array;
@@ -58,7 +60,71 @@ function setGrey(f: Fields, i: number, a: number) {
   setRGB(f, i, value, value, value);
 }
 
+/**
+ * Ashlar layout: which slab a texel belongs to and how far it is from a
+ * joint. `cols` × `rows` slabs per tile, every other row offset by half a
+ * slab (running bond). Distances are in tile units, so tiling is seamless.
+ */
+function ashlar(u: number, v: number, cols: number, rows: number, seed: number) {
+  const sv = v * rows;
+  const row = Math.floor(sv);
+  const fv = sv - row;
+  const su = u * cols + (row % 2 ? 0.5 : 0);
+  const col = Math.floor(su);
+  const fu = su - col;
+  const id = hash2(((col % cols) + cols) % cols, row, seed);
+  const edge = Math.min(Math.min(fu, 1 - fu) / cols, Math.min(fv, 1 - fv) / rows);
+  return { id, edge };
+}
+
 const SPECS: Record<SurfaceKind, SurfaceSpec> = {
+  travertineCladding: {
+    size: 1024,
+    tile: 2.4,
+    bump: 3.2,
+    generate(u, v, i, f) {
+      // Cut travertine slabs, 1.2 × 0.6 m, in a running bond: hairline
+      // joints, softly eased arrises, and each slab with its own tone and a
+      // different section of the vein-cut pattern.
+      const { id, edge } = ashlar(u, v, 2, 4, 141);
+      const joint = 1 - smoothstep(0.0012, 0.0026, edge);
+      const ease = smoothstep(0.0012, 0.006, edge);
+      const shift = id * 0.61;
+      const band = fbm(u, (v + shift) % 1, 2, 18, 4, 121);
+      const fineBand = fbm(u, (v + shift) % 1, 3, 56, 3, 122);
+      const poreNoise = valueNoise(u * 28, ((v + shift) % 1) * 176, 28, 176, 123);
+      const pore = poreNoise > 0.8 ? smoothstep(0.8, 0.93, poreNoise) : 0;
+      const cloud = fbm(u, v, 4, 4, 3, 124);
+      const tone = (id - 0.5) * 0.11;
+      f.height[i] = (band * 0.24 + fineBand * 0.16 - pore * 0.7) * ease + ease * 0.6 - joint * 0.9;
+      const a =
+        (0.89 + tone + (band - 0.5) * 0.18 + (fineBand - 0.5) * 0.07 + (cloud - 0.5) * 0.05 - pore * 0.2) *
+        (1 - joint * 0.42) *
+        (0.94 + ease * 0.06);
+      setRGB(f, i, a, Math.pow(Math.max(0, a), 1.04), Math.pow(Math.max(0, a), 1.13));
+      f.rough[i] = 0.8 + fineBand * 0.14 + pore * 0.18 + joint * 0.15;
+    },
+  },
+  stonePaving: {
+    size: 512,
+    tile: 2.4,
+    bump: 2.6,
+    generate(u, v, i, f) {
+      // Limestone flags, 0.8 × 0.4 m, laid in a running bond with sand joints.
+      const { id, edge } = ashlar(u, v, 3, 6, 151);
+      const joint = 1 - smoothstep(0.0016, 0.0034, edge);
+      const ease = smoothstep(0.0016, 0.007, edge);
+      const mottle = fbm(u, v, 6, 6, 4, 152);
+      const grain = fbm(u, v, 48, 48, 2, 153);
+      const pitNoise = valueNoise(u * 96, v * 96, 96, 96, 154);
+      const pit = pitNoise > 0.88 ? (pitNoise - 0.88) / 0.12 : 0;
+      const tone = (id - 0.5) * 0.14;
+      f.height[i] = (mottle * 0.3 + grain * 0.2 - pit * 0.5) * ease + ease * 0.5 - joint * 0.8;
+      const a = (0.86 + tone + (mottle - 0.5) * 0.14 + (grain - 0.5) * 0.06 - pit * 0.12) * (1 - joint * 0.5);
+      setRGB(f, i, a, Math.pow(Math.max(0, a), 1.03), Math.pow(Math.max(0, a), 1.09));
+      f.rough[i] = 0.84 + grain * 0.14 + joint * 0.1;
+    },
+  },
   travertine: {
     size: 512,
     tile: 1.2,

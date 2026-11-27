@@ -69,7 +69,13 @@ export class ArchBuilder {
     this.within(local, draw);
   }
 
-  add(key: string, source: THREE.BufferGeometry, local: THREE.Matrix4, color?: THREE.ColorRepresentation) {
+  add(
+    key: string,
+    source: THREE.BufferGeometry,
+    local: THREE.Matrix4,
+    color?: THREE.ColorRepresentation,
+    options: { keepUV?: boolean } = {},
+  ) {
     const geometry = source.index ? source.toNonIndexed() : source;
     if (geometry !== source) source.dispose();
     geometry.applyMatrix4(this.matrix.clone().multiply(local));
@@ -77,7 +83,7 @@ export class ArchBuilder {
       if (name !== "position" && name !== "normal" && name !== "uv") geometry.deleteAttribute(name);
     }
     geometry.clearGroups();
-    projectWorldUVs(geometry);
+    if (!options.keepUV) projectWorldUVs(geometry);
     if (color !== undefined) {
       const c = new THREE.Color(color);
       const count = geometry.getAttribute("position").count;
@@ -139,6 +145,29 @@ export class ArchBuilder {
     const segments = options.segments ?? 12;
     const geometry = new THREE.SphereGeometry(radius, segments, Math.max(6, Math.round(segments * 0.75)));
     this.add(key, geometry, this.local(position, options.rot, options.scale), options.color);
+  }
+
+  /**
+   * A textured card (quad) that keeps its own 0–1 UVs, e.g. a leaf sprite.
+   * With `bendFrom`, all normals point away from that point (in builder
+   * space), so a crown of flat cards shades like one soft, rounded volume.
+   */
+  card(key: string, width: number, height: number, position: Vec3, rot: Vec3, bendFrom?: Vec3) {
+    const geometry = new THREE.PlaneGeometry(width, height);
+    const local = this.local(position, rot);
+    this.add(key, geometry, local, undefined, { keepUV: true });
+    if (!bendFrom) return;
+    const list = this.parts.get(key)!;
+    const placed = list[list.length - 1];
+    const centre = new THREE.Vector3(...bendFrom).applyMatrix4(this.matrix);
+    const p = placed.getAttribute("position");
+    const n = placed.getAttribute("normal");
+    const v = new THREE.Vector3();
+    for (let i = 0; i < p.count; i += 1) {
+      v.fromBufferAttribute(p, i).sub(centre).normalize();
+      n.setXYZ(i, v.x, v.y, v.z);
+    }
+    n.needsUpdate = true;
   }
 
   /** A cylinder running between two points. */
