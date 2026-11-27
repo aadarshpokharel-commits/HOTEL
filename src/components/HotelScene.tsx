@@ -1,10 +1,11 @@
-import { ContactShadows, Environment, Lightformer, OrbitControls, Text } from "@react-three/drei";
+import { Environment, Lightformer, OrbitControls, Text } from "@react-three/drei";
 import { Canvas, ThreeEvent, useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import * as THREE from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import type { HotelFloor } from "../data/floors";
 import { SurfaceUVs } from "../three/Surface";
+import { StaticContactShadows, StaticShadowMap } from "../three/performance";
 import {
   BLOCK_D,
   BLOCK_W,
@@ -166,7 +167,7 @@ function CameraRig({
   resetSignal: number;
   controls: RefObject<OrbitControlsImpl | null>;
 }) {
-  const { camera, size } = useThree();
+  const { camera, size, invalidate } = useThree();
   const cameraTarget = useRef(new THREE.Vector3(8, 6, 12));
   const controlsTarget = useRef(new THREE.Vector3(0, 2.85, 0));
   const isAnimating = useRef(false);
@@ -188,10 +189,12 @@ function CameraRig({
       cameraTarget.current.set(4.1, focusY + 1.25, 7.5);
     }
     isAnimating.current = true;
-  }, [selectedFloor, resetSignal]);
+    invalidate();
+  }, [selectedFloor, resetSignal, invalidate]);
 
-  useFrame((_, delta) => {
+  useFrame((state, delta) => {
     if (!isAnimating.current || !controls.current) return;
+    state.invalidate();
 
     const easing = 1 - Math.exp(-delta * 2.4);
     controls.current.target.lerp(controlsTarget.current, easing);
@@ -257,6 +260,7 @@ export default function HotelScene({
   return (
     <Canvas
       shadows
+      frameloop="demand"
       dpr={[1, 1.7]}
       camera={{ position: [8, 6.15, 12], fov: 36, near: 0.1, far: 100 }}
       gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
@@ -308,7 +312,8 @@ export default function HotelScene({
         onSelectFloor={onSelectFloor}
         onHoverFloor={onHoverFloor}
       />
-      <ContactShadows
+      <StaticShadowMap />
+      <StaticContactShadows
         position={[0, 0.002, 0]}
         opacity={0.42}
         scale={13}

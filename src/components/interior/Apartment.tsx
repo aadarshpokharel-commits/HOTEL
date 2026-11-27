@@ -1,5 +1,5 @@
 import { RoundedBox } from "@react-three/drei";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { ArchBuilder } from "../../three/ArchBuilder";
@@ -280,7 +280,7 @@ export function Bathroom({ tub = true }: { tub?: boolean }) {
         <Model name="vaseRound" position={[0, 0.893, -0.08]} scale={0.6} castShadow={false} />
         <Towel position={[0.88, 0.97, 0.02]} size={[0.3, 0.12]} color="#e9e2d6" />
       </group>
-      <pointLight position={[vanityX, 2.2, -3.5]} intensity={2.2} distance={4} decay={2} color="#ffd29e" />
+      {/* Light budget: max four point lights per scene; this fixture glows (emissive) without casting light. */}
 
       {tub && <Bathtub position={[4.75, 0.012, -2.3]} />}
       {/* Bath mat between vanity and tub. */}
@@ -583,7 +583,7 @@ export function Foyer() {
         <Model name="vaseRound" position={[-0.22, 0.775, 0.12]} scale={0.7} castShadow={false} />
       </group>
       <Model name="pendant" position={[-3.6, 3.3 - 1.172 + 0.1, 2.45]} castShadow={false} />
-      <pointLight position={[-3.6, 2.1, 2.45]} intensity={2.2} distance={4.5} decay={2} color="#ffcf96" />
+      {/* Light budget: max four point lights per scene; this fixture glows (emissive) without casting light. */}
       <Model name="plant" position={[-1.55, 0.012, 4.1]} rotation={[0, 2.2, 0]} />
     </group>
   );
@@ -711,6 +711,12 @@ export const FEATURE_ANCHORS: Record<string, [number, number, number]> = {
 export function Flame({ position, width }: { position: [number, number, number]; width: number }) {
   const material = useRef<THREE.MeshStandardMaterial>(null);
   const light = useRef<THREE.PointLight>(null);
+  // The scene renders on demand; ask for ~15 frames a second for the flicker.
+  const invalidate = useThree((state) => state.invalidate);
+  useEffect(() => {
+    const timer = window.setInterval(() => invalidate(), 66);
+    return () => window.clearInterval(timer);
+  }, [invalidate]);
   useFrame(({ clock }) => {
     const t = clock.elapsedTime;
     const flicker = 0.82 + Math.sin(t * 9.1) * 0.08 + Math.sin(t * 23.7) * 0.06 + Math.sin(t * 3.3) * 0.05;

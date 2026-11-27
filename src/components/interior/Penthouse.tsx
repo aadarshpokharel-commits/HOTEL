@@ -262,7 +262,7 @@ export function PenthouseKitchen() {
       {[1.75, 2.85].map((z) => (
         <Model key={z} name="pendant" position={[-3.7, 3.3 - 1.172 + 0.35, z]} castShadow={false} />
       ))}
-      <pointLight position={[-3.7, 2.0, 2.3]} intensity={2.6} distance={4.5} decay={2} color="#ffcf96" />
+      {/* Light budget: max four point lights per scene; this fixture glows (emissive) without casting light. */}
       {/* Front door. */}
       <group position={[PLATE.x0 + 0.02, 0, 3.95]} rotation={[0, Math.PI / 2, 0]}>
         <mesh position={[0, 1.12, 0]} castShadow raycast={noRaycast}>

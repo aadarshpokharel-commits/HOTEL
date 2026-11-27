@@ -137,13 +137,14 @@
       "files": [
         {
           "path": "/models/decoration/potted_plant_02.glb",
-          "bytes": 888380
+          "bytes": 604992
         },
         {
           "path": "/models/decoration/potted_plant_02.mobile.glb",
-          "bytes": 627780
+          "bytes": 344396
         }
-      ]
+      ],
+      "processing": "Pot mesh simplified 58,836 -> 14,642 triangles (meshoptimizer, 0.5% error); leaves unchanged."
     },
     {
       "id": "ceramic_vase_01",

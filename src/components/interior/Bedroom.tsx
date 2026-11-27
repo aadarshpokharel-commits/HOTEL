@@ -369,7 +369,7 @@ export function BedroomFurnishings({ withDesk = true }: { withDesk?: boolean }) 
       {/* Reading corner by the window: lounge chair, pendant, plant. */}
       <Model name="loungeChair" position={[-3.85, 0.012, -3.5]} rotation={[0, 0.45, 0]} />
       <Model name="pendant" position={[-3.95, 2.1, -3.65]} castShadow={false} />
-      <pointLight position={[-3.95, 2.45, -3.65]} intensity={1.4} distance={3.4} decay={2} color="#ffbf80" />
+      {/* Light budget: max four point lights per scene; this fixture glows (emissive) without casting light. */}
       <Model name="plant" position={[-5.3, 0.012, -3.98]} rotation={[0, 0.8, 0]} />
 
       {/* Walnut wardrobe: three flush doors, shadow-gap plinth, brass pulls. */}

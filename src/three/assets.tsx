@@ -52,6 +52,8 @@ function ModelInstance({ name, castShadow = true, tint, ...group }: ModelProps) 
   const { scene } = useGLTF(modelUrl(name), USE_DRACO, USE_MESHOPT);
   const instance = useMemo(() => {
     const clone = scene.clone(true);
+    // Library models use compressed vertex data and already share materials.
+    clone.userData.noBatch = true;
     const tintColor = tint !== undefined ? new THREE.Color(tint) : null;
     clone.traverse((object) => {
       const mesh = object as THREE.Mesh;

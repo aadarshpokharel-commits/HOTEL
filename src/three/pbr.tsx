@@ -3,6 +3,7 @@ import type { MeshStandardMaterialProps } from "@react-three/fiber";
 import { useMemo } from "react";
 import * as THREE from "three";
 import { IS_MOBILE } from "./assets";
+import { materialKey, sharedMaterial } from "./Surface";
 
 // Photographic CC0 PBR texture sets (Poly Haven, see assets manifest):
 // base colour, OpenGL normal, roughness and ambient occlusion. `size` is the
@@ -79,14 +80,22 @@ type PBRMaterialProps = Omit<MeshStandardMaterialProps, "map" | "normalMap" | "r
 /** MeshStandardMaterial driven by a photographic PBR set. */
 export function PBRMaterial({ set, textureScale = 1, relief = 1, roughness = 1, ...rest }: PBRMaterialProps) {
   const maps = usePBR(set, textureScale);
-  const normalScale = useMemo(() => new THREE.Vector2(relief, relief), [relief]);
-  return (
-    <meshStandardMaterial
-      {...maps}
-      normalScale={normalScale}
-      roughness={roughness}
-      aoMapIntensity={0.9}
-      {...rest}
-    />
+  const key = `pbr|${set}|${textureScale}|${relief}|${roughness}|${materialKey(rest)}`;
+  // Shared per finish, like <Surface>: fewer state changes, batchable.
+  const material = useMemo(
+    () =>
+      sharedMaterial(key, () => {
+        const created = new THREE.MeshStandardMaterial();
+        created.setValues({
+          ...maps,
+          normalScale: new THREE.Vector2(relief, relief),
+          roughness: roughness as number,
+          aoMapIntensity: 0.9,
+          ...(rest as THREE.MeshStandardMaterialParameters),
+        });
+        return created;
+      }),
+    [key, maps],
   );
+  return <primitive object={material} attach="material" />;
 }

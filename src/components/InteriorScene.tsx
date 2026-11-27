@@ -1,4 +1,4 @@
-import { ContactShadows, Environment, Lightformer, OrbitControls } from "@react-three/drei";
+import { Environment, Lightformer, OrbitControls } from "@react-three/drei";
 import { Canvas, ThreeEvent, useFrame, useThree } from "@react-three/fiber";
 import { Suspense, useEffect, useRef, useState, type ReactNode } from "react";
 import * as THREE from "three";
@@ -7,6 +7,7 @@ import type { HotelFloor } from "../data/floors";
 import { Surface, SurfaceUVs } from "../three/Surface";
 import { Model, preloadModels } from "../three/assets";
 import { preloadPBR } from "../three/pbr";
+import { StaticBatch, StaticContactShadows, StaticShadowMap } from "../three/performance";
 import { BED_CENTER, BedroomDesk, BedroomFurnishings, DESK_POSITION, PlacedBed, WINDOW, mattressWidthFor } from "./interior/Bedroom";
 import {
   Bathroom,
@@ -618,10 +619,12 @@ function FeatureObject({
 
 function InteriorRoom({
   floor,
+  resetSignal,
   selectedFeature,
   onFeatureSelect,
 }: {
   floor: HotelFloor;
+  resetSignal: number;
   selectedFeature: string | null;
   onFeatureSelect: (feature: InteriorFeature) => void;
 }) {
@@ -637,6 +640,7 @@ function InteriorRoom({
     preloadPBR(["parquet", "wool", "walnut"]);
   }, [isLobby]);
   const isMobile = useThree((state) => state.size.width <= 640);
+  const invalidate = useThree((state) => state.invalidate);
   const controls = useRef<OrbitControlsImpl | null>(null);
   const desiredTarget = useRef(new THREE.Vector3(0, 1.12, 0));
   const desiredCamera = useRef(
@@ -647,10 +651,29 @@ function InteriorRoom({
   useEffect(() => {
     desiredCamera.current.set(9.5, 10.5, 11.5).multiplyScalar(isMobile ? 1.45 : 1);
     isAnimatingCamera.current = true;
-  }, [isMobile]);
+    invalidate();
+  }, [isMobile, invalidate]);
 
-  useFrame((_, delta) => {
+  // A new floor or "Reset view" returns to the default view immediately, as
+  // the old per-floor canvas did, but keeps the GPU context, compiled shaders
+  // and uploaded textures.
+  useEffect(() => {
+    desiredTarget.current.set(0, 1.12, 0);
+    desiredCamera.current.set(9.5, 10.5, 11.5).multiplyScalar(isMobile ? 1.45 : 1);
+    const c = controls.current;
+    if (c) {
+      c.target.copy(desiredTarget.current);
+      c.object.position.copy(desiredCamera.current);
+      c.update();
+    }
+    isAnimatingCamera.current = false;
+    invalidate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [floor.id, resetSignal]);
+
+  useFrame((state, delta) => {
     if (!isAnimatingCamera.current) return;
+    state.invalidate();
     const easing = 1 - Math.exp(-delta * 2.8);
     if (!controls.current) return;
     controls.current.target.lerp(desiredTarget.current, easing);
@@ -695,6 +718,7 @@ function InteriorRoom({
     desiredTarget.current.set(x, y, z);
     desiredCamera.current.set(x + 3.6, y + 2.1, z + 4.5);
     isAnimatingCamera.current = true;
+    invalidate();
   };
 
   return (
@@ -723,6 +747,7 @@ function InteriorRoom({
         <Lightformer form="rect" intensity={1.8} position={[5, 4, -4]} scale={[6, 4, 1]} color="#f0d7b0" />
         <Lightformer form="rect" intensity={1.5} position={[0, 6, 0]} scale={[10, 0.6, 1]} color="#fff3dc" />
       </Environment>
+      <StaticBatch key={`static-${floor.id}`}>
       <RoomShell residence={!isLobby} />
       {isLobby ? (
         <>
@@ -760,8 +785,12 @@ function InteriorRoom({
               <Dining round={floor.id === 5} fabric={paletteFor(floor.id).chair} />
             )}
           </Suspense>
+          <Suspense fallback={null}>
+            <BedroomFurnishings withDesk={!features.some((f) => f.id === "writing-desk")} />
+          </Suspense>
         </>
       )}
+      </StaticBatch>
       {features.map((feature) => (
         <FeatureObject
           key={feature.id}
@@ -771,12 +800,8 @@ function InteriorRoom({
           onSelect={focusFeature}
         />
       ))}
-      {!isLobby && (
-        <Suspense fallback={null}>
-          <BedroomFurnishings withDesk={!features.some((f) => f.id === "writing-desk")} />
-        </Suspense>
-      )}
-      <ContactShadows
+      <StaticShadowMap />
+      <StaticContactShadows
         position={[0, -0.01, 0]}
         opacity={0.3}
         scale={15}
@@ -823,8 +848,8 @@ export default function InteriorScene({
 
   return (
     <Canvas
-      key={`${floor.id}-${resetSignal}`}
       shadows
+      frameloop="demand"
       dpr={[1, 1.4]}
       camera={{ position: [9.5, 10.5, 11.5], fov: 40, near: 0.1, far: 60 }}
       gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }}
@@ -842,6 +867,7 @@ export default function InteriorScene({
       <SurfaceUVs />
       <InteriorRoom
         floor={floor}
+        resetSignal={resetSignal}
         selectedFeature={selectedFeature}
         onFeatureSelect={handleFeatureSelect}
       />

@@ -50,26 +50,54 @@ export function Surface({
   ...rest
 }: SurfaceProps) {
   const surface = getSurface(kind, textureScale);
-  const colorKey = typeof color === "string" || typeof color === "number" ? color : null;
-  const tinted = useMemo(
-    () => new THREE.Color(color as THREE.ColorRepresentation).multiplyScalar(1 / surface.albedoMean),
-    [colorKey ?? color, surface],
+  const key = `surface|${kind}|${physical}|${textureScale}|${relief}|${materialKey(color)}|${roughness}|${materialKey(rest)}`;
+  // Identical surfaces share one material instance: fewer GPU state changes,
+  // and it lets <StaticBatch> merge meshes that use the same finish.
+  const material = useMemo(
+    () =>
+      sharedMaterial(key, () => {
+        const created = physical ? new THREE.MeshPhysicalMaterial() : new THREE.MeshStandardMaterial();
+        created.setValues({
+          map: surface.map,
+          normalMap: surface.normalMap,
+          roughnessMap: surface.roughnessMap,
+          normalScale: new THREE.Vector2(relief, relief),
+          color: new THREE.Color(color as THREE.ColorRepresentation).multiplyScalar(1 / surface.albedoMean),
+          roughness: (roughness as number) / surface.roughMean,
+          ...(rest as THREE.MeshPhysicalMaterialParameters),
+        });
+        return created;
+      }),
+    [key],
   );
-  const normalScale = useMemo(() => new THREE.Vector2(relief, relief), [relief]);
-  const props = {
-    map: surface.map,
-    normalMap: surface.normalMap,
-    roughnessMap: surface.roughnessMap,
-    normalScale,
-    color: tinted,
-    roughness: (roughness as number) / surface.roughMean,
-    ...rest,
-  };
-  return physical ? (
-    <meshPhysicalMaterial {...props} />
-  ) : (
-    <meshStandardMaterial {...(props as MeshStandardMaterialProps)} />
-  );
+  return <primitive object={material} attach="material" />;
+}
+
+// ---------------------------------------------------------------------------
+// Shared material cache.
+
+const materialCache = new Map<string, THREE.Material>();
+
+/** Returns the cached material for `key`, creating it once. Never disposed. */
+export function sharedMaterial<T extends THREE.Material>(key: string, create: () => T): T {
+  let material = materialCache.get(key) as T | undefined;
+  if (!material) {
+    material = create();
+    materialCache.set(key, material);
+  }
+  return material;
+}
+
+/** Stable string for material parameters (colours, numbers, strings, flags). */
+export function materialKey(value: unknown): string {
+  return JSON.stringify(value, (_k, v) => {
+    if (v && typeof v === "object" && (v as THREE.Color).isColor) {
+      const c = v as THREE.Color;
+      return `rgb(${c.r.toFixed(5)},${c.g.toFixed(5)},${c.b.toFixed(5)})`;
+    }
+    if (v && typeof v === "object" && (v as THREE.Texture).isTexture) return `tex:${(v as THREE.Texture).uuid}`;
+    return v;
+  }) ?? "";
 }
 
 /**

@@ -307,7 +307,7 @@ export default function App() {
       </header>
 
       <main className="experience" id="explore">
-        <AnimatePresence mode="sync">
+        <AnimatePresence mode="wait">
           {activeFloor !== null ? (
             <InteriorView
               key="interior"
