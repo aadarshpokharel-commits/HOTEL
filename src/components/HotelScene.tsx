@@ -262,7 +262,7 @@ export default function HotelScene({
     <Canvas
       shadows
       frameloop="demand"
-      dpr={[1, 1.7]}
+      dpr={[1.5, 2]}
       camera={{ position: [8, 6.15, 12], fov: 36, near: 0.1, far: 100 }}
       gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
       onCreated={({ gl }) => {
@@ -283,7 +283,7 @@ export default function HotelScene({
         intensity={2.35}
         color="#ffe0b0"
         castShadow
-        shadow-mapSize={[2048, 2048]}
+        shadow-mapSize={[4096, 4096]}
         shadow-bias={-0.0004}
         shadow-normalBias={0.02}
         shadow-camera-far={30}

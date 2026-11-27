@@ -141,7 +141,7 @@ function leafTexture(kind: LeafKind) {
   }
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
-  texture.anisotropy = 4;
+  texture.anisotropy = 16;
   leafTextures.set(kind, texture);
   return texture;
 }

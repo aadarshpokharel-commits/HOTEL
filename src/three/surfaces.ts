@@ -400,7 +400,7 @@ function makeTexture(data: Uint8Array, size: number, srgb: boolean) {
   texture.magFilter = THREE.LinearFilter;
   texture.minFilter = THREE.LinearMipmapLinearFilter;
   texture.generateMipmaps = true;
-  texture.anisotropy = 8;
+  texture.anisotropy = 16;
   texture.needsUpdate = true;
   return texture;
 }
