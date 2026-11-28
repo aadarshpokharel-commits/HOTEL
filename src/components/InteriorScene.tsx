@@ -725,7 +725,7 @@ function InteriorRoom({
     <>
       <color attach="background" args={["#000000"]} />
       <fog attach="fog" args={["#000000", isMobile ? 24 : 15, isMobile ? 48 : 28]} />
-      <ambientLight intensity={isMobile ? 0.9 : 0.58} color="#fff4df" />
+      <ambientLight intensity={isMobile ? 1 : 0.72} color="#fff4df" />
       <hemisphereLight args={["#f2e7d2", "#625747", isMobile ? 1.2 : 0.9]} />
       <directionalLight
         position={[-4, 8, 5]}
@@ -855,7 +855,7 @@ export default function InteriorScene({
       gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }}
       onCreated={({ gl, camera, size }) => {
         gl.toneMapping = THREE.ACESFilmicToneMapping;
-        gl.toneMappingExposure = size.width <= 640 ? 1.12 : 1;
+        gl.toneMappingExposure = size.width <= 640 ? 1.2 : 1.16;
         gl.outputColorSpace = THREE.SRGBColorSpace;
         gl.shadowMap.type = THREE.PCFSoftShadowMap;
         if (camera instanceof THREE.PerspectiveCamera) {

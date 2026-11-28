@@ -2509,3 +2509,28 @@ a:focus-visible {
     left: -18px;
   }
 }
+
+/* ---- Interior view: copy further left, brighter room -------------------- */
+
+.interior-vignette {
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.48) 20%, rgba(0, 0, 0, 0.14) 42%, transparent 60%),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.55) 0%, transparent 22%, transparent 82%, rgba(0, 0, 0, 0.18) 100%);
+}
+
+.interior-copy h1,
+.interior-copy .eyebrow,
+.interior-description,
+.interior-instructions,
+.interior-topline {
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.55);
+}
+
+@media (min-width: 641px) {
+  .interior-copy,
+  .interior-topline,
+  .back-building,
+  .feature-card {
+    left: clamp(20px, 4.2%, 72px);
+  }
+}
