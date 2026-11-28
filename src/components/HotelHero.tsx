@@ -253,7 +253,7 @@ export default function HotelHero({
               height={IMG_H}
               alt="Aurelia Milano at sunset: a six-storey travertine hotel with every window lit, on a lamp-lit terrace above Milan, the cathedral glowing against a violet and orange sky."
               draggable={false}
-              fetchPriority="high"
+              {...{ fetchpriority: "high" }}
             />
             <svg className="hh-overlay" viewBox={`0 0 ${IMG_W} ${IMG_H}`} preserveAspectRatio="none">
               <defs>
@@ -316,7 +316,7 @@ export default function HotelHero({
             <strong>{litFloor.name}</strong>
             {litFloor.rate && (
               <span className="hh-card-rate">
-                From <b>{formatRate(litFloor.rate)}</b> / night
+                From <b>{formatRate(litFloor.rate)}</b> / {litFloor.rate.unit ?? "night"}
               </span>
             )}
           </span>

@@ -29,6 +29,7 @@ import {
   TERRACE_CENTER,
   TerraceGlazing,
 } from "./interior/Penthouse";
+import { Banquette, ChefTable, MarbleBar, TAVOLA, TavolaDining, TavolaLighting, WineCellar } from "./interior/Tavola";
 import {
   LOUNGE_CENTER,
   LobbyArchitecture,
@@ -59,10 +60,10 @@ const FEATURES: Record<number, InteriorFeature[]> = {
     { id: "lobby-artwork", name: "The art collection", note: "Original botanical studies and abstract Milanese landscapes, framed in dark walnut and brass." },
   ],
   1: [
-    { id: "suite-bed", name: "The bedroom", note: "A calm bedroom with a tailored headboard and crisp hotel linens." },
-    { id: "chef-table", name: "The living hall", note: "An open hall arranged for conversation, dining, and a little lingering." },
-    { id: "bathroom", name: "The marble bathroom", note: "A private bath with a walk-in shower, vanity, and brushed brass fittings." },
-    { id: "toilet", name: "The private water closet", note: "A separate, private toilet room with its own door and quiet detailing." },
+    { id: "tavola-chef", name: "The chef's table", note: "Twelve seats around one long Calacatta marble table, set with brass chargers and crystal under twin chandeliers." },
+    { id: "tavola-banquette", name: "The velvet banquette", note: "Channel-tufted emerald velvet along bronze mirrors: intimate tables for two, lit by brass sconces." },
+    { id: "tavola-bar", name: "The marble bar", note: "A fluted walnut bar with a waterfall marble top, backlit onyx and the evening's aperitivo." },
+    { id: "tavola-cellar", name: "The wine cellar", note: "A glass-fronted cellar of over two hundred bottles, from Barolo to Franciacorta, kept at a steady 14°C." },
   ],
   2: [
     { id: "king-bed", name: "The bedroom", note: "A quiet bedroom with layered linen, walnut, and warm bedside lighting." },
@@ -460,6 +461,10 @@ function featureAnchor(id: string): [number, number, number] | undefined {
   if (id === "panoramic-lounge") return [PENTHOUSE_LIVING[0], 0.95, PENTHOUSE_LIVING[2]];
   if (id === "terrace") return [TERRACE_CENTER[0], 0.8, TERRACE_CENTER[2]];
   if (id === "writing-desk") return [DESK_POSITION[0], 0.9, DESK_POSITION[2]];
+  if (id === "tavola-chef") return [TAVOLA.chef[0], 0.95, TAVOLA.chef[2]];
+  if (id === "tavola-banquette") return [TAVOLA.banquette[0] + 0.6, 0.9, TAVOLA.banquette[2]];
+  if (id === "tavola-bar") return [TAVOLA.bar[0], 1.1, TAVOLA.bar[2]];
+  if (id === "tavola-cellar") return [TAVOLA.cellar[0], 1.5, TAVOLA.cellar[2] + 0.4];
   return FEATURE_ANCHORS[id];
 }
 
@@ -537,6 +542,35 @@ function FeatureObject({
         <Suspense fallback={null}>
           <LobbyArtwork />
         </Suspense>
+      </Interactive>
+    );
+  }
+
+  if (feature.id === "tavola-chef") {
+    return (
+      <Interactive {...interactive}>
+        <ChefTable />
+      </Interactive>
+    );
+  }
+  if (feature.id === "tavola-banquette") {
+    return (
+      <Interactive {...interactive}>
+        <Banquette />
+      </Interactive>
+    );
+  }
+  if (feature.id === "tavola-bar") {
+    return (
+      <Interactive {...interactive}>
+        <MarbleBar />
+      </Interactive>
+    );
+  }
+  if (feature.id === "tavola-cellar") {
+    return (
+      <Interactive {...interactive}>
+        <WineCellar />
       </Interactive>
     );
   }
@@ -630,6 +664,7 @@ function InteriorRoom({
 }) {
   const features = FEATURES[floor.id] ?? FEATURES[0];
   const isLobby = floor.id === 0;
+  const isTavola = floor.id === 1;
   useEffect(() => {
     if (isLobby) {
       preloadModels(["loungeChair", "ottoman", "mediaCabinet", "pendant", "plant", "vaseRound", "vaseTall"]);
@@ -748,8 +783,13 @@ function InteriorRoom({
         <Lightformer form="rect" intensity={1.5} position={[0, 6, 0]} scale={[10, 0.6, 1]} color="#fff3dc" />
       </Environment>
       <StaticBatch key={`static-${floor.id}`}>
-      <RoomShell residence={!isLobby} />
-      {isLobby ? (
+      <RoomShell residence={!isLobby && !isTavola} />
+      {isTavola ? (
+        <Suspense fallback={null}>
+          <TavolaDining />
+          <TavolaLighting />
+        </Suspense>
+      ) : isLobby ? (
         <>
           <Suspense fallback={null}>
             <LobbyArchitecture />

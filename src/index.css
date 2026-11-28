@@ -2534,3 +2534,20 @@ a:focus-visible {
     left: clamp(20px, 4.2%, 72px);
   }
 }
+
+/* Floor lists stack like the building: Penthouse on top, Reception at the
+   bottom. Horizontal chip rows (phones, centred layout) read G → 05. */
+.rail-list {
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+@media (max-width: 640px) {
+  .rail-list {
+    flex-direction: row;
+  }
+}
+
+.app-shell.is-center .rail-list {
+  flex-direction: row;
+}

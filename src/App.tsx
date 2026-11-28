@@ -61,7 +61,7 @@ function BookingPanel({ floor, rate, onBook }: { floor: HotelFloor; rate: FloorR
         <span className="booking-amount">
           <span className="booking-from">From</span>
           <strong>{formatRate(rate)}</strong>
-          <span className="booking-unit">/ night</span>
+          <span className="booking-unit">/ {rate.unit ?? "night"}</span>
         </span>
         <span className="booking-note">{rate.note}</span>
       </div>
@@ -69,7 +69,7 @@ function BookingPanel({ floor, rate, onBook }: { floor: HotelFloor; rate: FloorR
         type="button"
         className="booking-button"
         onClick={onBook ? () => onBook(floor) : undefined}
-        aria-label={`Book ${floor.name}, from ${formatRate(rate)} per night`}
+        aria-label={`Book ${floor.name}, from ${formatRate(rate)} per ${rate.unit ?? "night"}`}
       >
         <span>Book now</span>
         <ArrowRight size={14} strokeWidth={1.8} />

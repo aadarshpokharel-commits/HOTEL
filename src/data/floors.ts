@@ -17,6 +17,8 @@ export type FloorRate = {
   category: string;
   /** Short line under the price. */
   note: string;
+  /** What the price is for: "night" (default) or e.g. "guest". */
+  unit?: string;
 };
 
 // Placeholder nightly rates. Edit them here: every price label and the
@@ -47,13 +49,13 @@ export const floors: HotelFloor[] = [
   {
     id: 1,
     level: "First floor",
-    name: "Tavola Residence",
-    shortName: "One-bedroom residence",
+    name: "Tavola",
+    shortName: "Restaurant & wine bar",
     description:
-      "An Italian-inspired residence with a bedroom, open living hall, marble bathroom, and separate private toilet.",
-    detail: "Bedroom · hall · bath · toilet",
+      "Our Milanese dining room: a twelve-seat chef's table in Calacatta marble, velvet banquettes, a glass wine cellar, and a marble bar for the evening's first glass.",
+    detail: "Chef's table · banquette · bar · cellar",
     tag: "The art of gathering",
-    rate: { amount: 680, category: "Residence", note: RESIDENCE_NOTE },
+    rate: { amount: 145, category: "Tasting menu", unit: "guest", note: "Seven courses · wine pairing +€95" },
   },
   {
     id: 2,
