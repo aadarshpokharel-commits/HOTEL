@@ -1,15 +1,42 @@
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  ArrowDownRight,
+  Armchair,
   ArrowLeft,
   ArrowRight,
+  BedDouble,
+  CalendarDays,
   Compass,
+  ConciergeBell,
+  Gem,
+  House,
+  MapPin,
+  Orbit,
   RotateCcw,
   Sparkles,
+  UtensilsCrossed,
+  type LucideIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import InteriorScene, { type InteriorFeature } from "./components/InteriorScene";
-import HotelScene from "./components/HotelScene";
+import HotelHero from "./components/HotelHero";
+
+/**
+ * "side": the hotel stands right of the title and floor list (wide windows).
+ * "center": title on top, hotel in the middle, floor chips below.
+ */
+function useSceneLayout() {
+  const pick = () =>
+    typeof window !== "undefined" && window.innerWidth >= 980 && window.innerWidth / window.innerHeight >= 1.2
+      ? "side"
+      : "center";
+  const [layout, setLayout] = useState<"side" | "center">(pick);
+  useEffect(() => {
+    const update = () => setLayout(pick());
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+  return layout;
+}
 import { floors, formatRate, type FloorRate, type HotelFloor } from "./data/floors";
 
 /**
@@ -63,13 +90,17 @@ function Brand() {
   );
 }
 
+const FLOOR_ICONS: LucideIcon[] = [ConciergeBell, UtensilsCrossed, BedDouble, Armchair, House, Gem];
+
 function FloorRail({
   activeFloor,
   onSelect,
+  onHover,
   compact = false,
 }: {
   activeFloor: number | null;
   onSelect: (floorId: number) => void;
+  onHover?: (floorId: number | null) => void;
   compact?: boolean;
 }) {
   return (
@@ -85,12 +116,17 @@ function FloorRail({
       <div className="rail-list">
         {floors.map((floor) => {
           const active = activeFloor === floor.id;
+          const Icon = FLOOR_ICONS[floor.id] ?? Sparkles;
           return (
             <button
               key={floor.id}
               type="button"
               className={`rail-item${active ? " is-active" : ""}`}
               onClick={() => onSelect(floor.id)}
+              onPointerEnter={onHover ? () => onHover(floor.id) : undefined}
+              onPointerLeave={onHover ? () => onHover(null) : undefined}
+              onFocus={onHover ? () => onHover(floor.id) : undefined}
+              onBlur={onHover ? () => onHover(null) : undefined}
               aria-current={active ? "step" : undefined}
               aria-label={`Explore ${floor.level}: ${floor.shortName}`}
             >
@@ -101,6 +137,7 @@ function FloorRail({
                 {floor.name.replace(/^The /, "").replace(/ Residence$/, "")}
               </span>
               <span className="rail-dot" />
+              <span className="rail-icon" aria-hidden="true"><Icon size={18} strokeWidth={1.4} /></span>
             </button>
           );
         })}
@@ -225,6 +262,7 @@ export default function App() {
   const [isEntering, setIsEntering] = useState(false);
   const [resetSignal, setResetSignal] = useState(0);
   const [showAbout, setShowAbout] = useState(false);
+  const sceneLayout = useSceneLayout();
   const enterTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const currentFloor = floors.find((floor) => floor.id === activeFloor) ?? floors[0];
   const previewFloor = floors.find(
@@ -279,7 +317,7 @@ export default function App() {
   };
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell${activeFloor === null ? ` is-landing is-${sceneLayout}` : ""}`}>
       <header className="site-header">
         <Brand />
         <nav className="top-nav" aria-label="Main navigation">
@@ -301,11 +339,21 @@ export default function App() {
           >
             About
           </button>
+          <button type="button" className="top-nav-link" onClick={() => exploreFloor(2)}>
+            Rooms
+          </button>
+          <button type="button" className="top-nav-link" onClick={() => exploreFloor(1)}>
+            Dining
+          </button>
+          {/* No gallery page yet: inert, like Book now, until it is connected. */}
+          <button type="button" className="top-nav-link">
+            Gallery
+          </button>
         </nav>
-        <a className="header-note" href="#explore">
-          A PLACE TO <span>STAY A LITTLE LONGER</span>
-          <ArrowDownRight size={14} strokeWidth={1.5} />
-        </a>
+        <button className="header-note" type="button" onClick={() => exploreFloor(2)}>
+          <CalendarDays size={13} strokeWidth={1.5} />
+          <span>Book a Stay</span>
+        </button>
       </header>
 
       <main className="experience" id="explore">
@@ -328,36 +376,42 @@ export default function App() {
               exit={{ opacity: 0, scale: 0.985 }}
               transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
             >
-              <div className="scene-backdrop" />
-              <div className="canvas-wrap">
-                <HotelScene
-                  floors={floors}
-                  selectedFloor={selectedFloor}
-                  onSelectFloor={exploreFloor}
-                  onHoverFloor={setHoveredFloor}
-                  onFocusBuilding={resetCamera}
-                  resetSignal={resetSignal}
-                  controlsLocked={isEntering}
-                />
-              </div>
+              <HotelHero
+                floors={floors}
+                layout={sceneLayout}
+                selectedFloor={selectedFloor}
+                hoveredFloor={hoveredFloor}
+                onHover={isEntering ? () => undefined : setHoveredFloor}
+                onSelect={exploreFloor}
+              />
 
+              <div className="landing-html">
               <section className="hero-title" aria-label="Aurelia Milano">
                 <p className="eyebrow"><span className="eyebrow-mark" />A NEW PERSPECTIVE ON MILAN</p>
                 <h1>A stay, <em>well</em><br />considered.</h1>
-                <p className="hero-subtitle">AURELIA MILANO</p>
+                <p className="hero-subtitle">
+                  Experience refined comfort in the heart of Milan, where Italian
+                  heritage meets modern living.
+                </p>
               </section>
 
-              <FloorRail activeFloor={selectedFloor} onSelect={exploreFloor} />
+              <FloorRail
+                activeFloor={selectedFloor ?? hoveredFloor}
+                onSelect={exploreFloor}
+                onHover={isEntering ? undefined : setHoveredFloor}
+              />
 
               <div className="scene-caption">
                 <span className="caption-orbit"><Compass size={14} strokeWidth={1.4} /></span>
                 <span>SELECT A FLOOR TO EXPLORE</span>
                 <span className="caption-separator" />
-                <span>DRAG TO ORBIT</span>
+                <span className="caption-orbit caption-orbit--plain"><Orbit size={18} strokeWidth={1.3} /></span>
+                <span className="caption-hint-mouse">HOVER TO PREVIEW</span>
+                <span className="caption-hint-touch">TAP · SWIPE TO PREVIEW</span>
               </div>
 
               <button
-                className="camera-reset"
+                className={`camera-reset${hoveredFloor !== null || selectedFloor !== null ? " is-armed" : ""}`}
                 type="button"
                 onClick={resetCamera}
                 aria-label="Reset camera position"
@@ -366,29 +420,7 @@ export default function App() {
                 <RotateCcw size={15} strokeWidth={1.55} />
                 <span>Reset view</span>
               </button>
-
-              {previewFloor && (
-                <motion.div
-                  className="selection-card"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.28 }}
-                >
-                  <span className="selection-card-number">
-                    {previewFloor.id === 0 ? "G" : String(previewFloor.id).padStart(2, "0")}
-                  </span>
-                  <span className="selection-card-copy">
-                    <span>{previewFloor.level}</span>
-                    <strong>{previewFloor.shortName}</strong>
-                    {previewFloor.rate && (
-                      <span className="selection-card-rate">
-                        From <b>{formatRate(previewFloor.rate)}</b> / night
-                      </span>
-                    )}
-                  </span>
-                  <span className="selection-card-icon"><Sparkles size={14} /></span>
-                </motion.div>
-              )}
+              </div>
 
               {showAbout && (
                 <motion.aside
@@ -422,17 +454,14 @@ export default function App() {
                 </motion.aside>
               )}
 
-              <div className="hero-footnote">
-                <span>AN EXPLORATION IN HOSPITALITY</span>
-                <span>SCROLL TO DISCOVER</span>
-              </div>
             </motion.div>
           )}
         </AnimatePresence>
       </main>
       <footer className="site-footer">
-        <span>© AURELIA MILANO</span>
-        <span className="footer-center">MADE OF PLACE, MADE TO FEEL LIKE YOURS</span>
+        <span className="footer-brand">AURELIA MILANO</span>
+        <span className="footer-center">A BOUTIQUE HOTEL IN MILAN</span>
+        <span className="footer-place"><MapPin size={15} strokeWidth={1.5} /> MILANO, ITALIA</span>
       </footer>
     </div>
   );
